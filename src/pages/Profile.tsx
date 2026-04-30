@@ -1,15 +1,8 @@
-import { useState, useEffect } from "react";
 import { MapPin, Bell, CreditCard, LogOut, Sparkles, Home, Building, Edit, Phone } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useGeolocation } from "@/hooks/useGeolocation";
 import { useNavigate } from "react-router-dom";
-
-interface User {
-  name: string;
-  email: string;
-  phone: string;
-  createdAt?: number;
-}
+import { useAuth } from "@/hooks/useAuth";
 
 interface Address {
   doorNo: string;
@@ -23,19 +16,10 @@ interface Address {
 export default function Profile() {
   const geo = useGeolocation();
   const navigate = useNavigate();
-  const [user, setUser] = useState<User | null>(null);
-  const [address, setAddress] = useState<Address | null>(null);
-
-  useEffect(() => {
-    const savedUser = localStorage.getItem("bb:user");
-    const savedAddress = localStorage.getItem("bb:address");
-    if (savedUser) setUser(JSON.parse(savedUser));
-    if (savedAddress) setAddress(JSON.parse(savedAddress));
-  }, []);
+  const { user, signOut } = useAuth();
 
   function handleSignOut() {
-    localStorage.removeItem("bb:user");
-    localStorage.removeItem("bb:address");
+    signOut();
     navigate("/login");
   }
 
@@ -67,39 +51,27 @@ export default function Profile() {
       </header>
 
       {/* Saved Address */}
-      {address && (
-        <section className="rounded-2xl border border-border bg-card p-5 shadow-card">
-          <div className="flex items-start gap-3">
-            <div className="grid h-10 w-10 place-items-center rounded-full bg-primary/10">
-              {address.type === "home" ? (
-                <Home className="h-5 w-5 text-primary" />
-              ) : (
-                <Building className="h-5 w-5 text-primary" />
-              )}
-            </div>
-            <div className="flex-1">
-              <div className="flex items-center gap-2">
-                <h2 className="font-display font-semibold">
-                  {address.type === "home" ? "Home" : "Work"} Address
-                </h2>
-              </div>
-              <p className="mt-1 text-sm text-muted-foreground">
-                {[address.doorNo, address.flatNo, address.street, address.area, address.city]
-                  .filter(Boolean)
-                  .join(", ")}
-              </p>
-            </div>
-            <Button
-              size="sm"
-              variant="outline"
-              className="rounded-full"
-              onClick={() => navigate("/edit-profile")}
-            >
-              Edit
-            </Button>
+      <section className="rounded-2xl border border-border bg-card p-5 shadow-card">
+        <div className="flex items-start gap-3">
+          <div className="grid h-10 w-10 place-items-center rounded-full bg-primary/10">
+            <Home className="h-5 w-5 text-primary" />
           </div>
-        </section>
-      )}
+          <div className="flex-1">
+            <h2 className="font-display font-semibold">Address needed</h2>
+            <p className="text-sm text-muted-foreground">
+              Add your delivery address for faster checkout.
+            </p>
+          </div>
+          <Button
+            size="sm"
+            variant="outline"
+            className="rounded-full"
+            onClick={() => navigate("/edit-profile")}
+          >
+            Add
+          </Button>
+        </div>
+      </section>
 
       {/* Geo Location */}
       <section className="rounded-2xl border border-border bg-card p-5 shadow-card">

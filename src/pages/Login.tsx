@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { User, Mail, Phone, Lock, LogIn, UserPlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -6,93 +6,50 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
 import { toast } from "@/hooks/use-toast";
-
-interface UserData {
-  name: string;
-  email: string;
-  phone: string;
-  password: string;
-}
+import { useAuth } from "@/hooks/useAuth";
 
 export default function Login() {
   const navigate = useNavigate();
+  const { signIn, signUp } = useAuth();
   const [isSignup, setIsSignup] = useState(false);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  // Redirect if already logged in
-  useEffect(() => {
-    const user = localStorage.getItem("bb:user");
-    if (user) {
-      navigate("/");
-    }
-  }, [navigate]);
-
-  function handleLogin(e: React.FormEvent) {
+  async function handleLogin(e: React.FormEvent) {
     e.preventDefault();
+    setLoading(true);
 
-    if (!email.trim() || !password.trim()) {
+    try {
+      await signIn(email, password);
       toast({
-        title: "Missing fields",
-        description: "Please enter email and password.",
+        title: "Welcome back!",
+        description: "Successfully signed in.",
       });
-      return;
-    }
-
-    // Check if user exists in localStorage
-    const storedUsers = localStorage.getItem("bb:users");
-    if (!storedUsers) {
+      navigate("/");
+    } catch (error: any) {
       toast({
-        title: "No account",
-        description: "Please create an account first.",
+        title: "Sign in failed",
+        description: error.message || "Please check your credentials.",
+        variant: "destructive",
       });
-      return;
+    } finally {
+      setLoading(false);
     }
-
-    const users: UserData[] = JSON.parse(storedUsers);
-    const user = users.find(u => u.email.toLowerCase() === email.toLowerCase());
-
-    if (!user) {
-      toast({
-        title: "User not found",
-        description: "No account with this email.",
-      });
-      return;
-    }
-
-    if (user.password !== password) {
-      toast({
-        title: "Invalid password",
-        description: "Please check your password.",
-      });
-      return;
-    }
-
-    // Login successful
-    localStorage.setItem("bb:user", JSON.stringify({
-      name: user.name,
-      email: user.email,
-      phone: user.phone,
-    }));
-
-    toast({
-      title: "Welcome back!",
-      description: `Hello, ${user.name}!`,
-    });
-
-    navigate("/");
   }
 
-  function handleSignup(e: React.FormEvent) {
+  async function handleSignup(e: React.FormEvent) {
     e.preventDefault();
+    setLoading(true);
 
-    if (!name.trim() || !email.trim() || !phone.trim() || !password.trim()) {
+    if (!name.trim()) {
       toast({
-        title: "Missing fields",
-        description: "Please fill in all fields.",
+        title: "Missing name",
+        description: "Please enter your full name.",
       });
+      setLoading(false);
       return;
     }
 
@@ -101,6 +58,7 @@ export default function Login() {
         title: "Invalid email",
         description: "Enter a valid email address.",
       });
+      setLoading(false);
       return;
     }
 
@@ -109,6 +67,7 @@ export default function Login() {
         title: "Invalid phone",
         description: "Enter a valid 10-digit Indian mobile number.",
       });
+      setLoading(false);
       return;
     }
 
@@ -117,40 +76,26 @@ export default function Login() {
         title: "Weak password",
         description: "Password must be at least 6 characters.",
       });
+      setLoading(false);
       return;
     }
 
-    // Check if email already exists
-    const storedUsers = localStorage.getItem("bb:users");
-    const users: UserData[] = storedUsers ? JSON.parse(storedUsers) : [];
-
-    if (users.find(u => u.email.toLowerCase() === email.toLowerCase())) {
+    try {
+      await signUp(name, email, phone, password);
       toast({
-        title: "Email exists",
-        description: "Please login instead.",
+        title: "Account created!",
+        description: "Welcome to QuickBite!",
       });
-      setIsSignup(false);
-      return;
+      navigate("/");
+    } catch (error: any) {
+      toast({
+        title: "Sign up failed",
+        description: error.message || "Something went wrong.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
     }
-
-    // Save new user
-    const newUser: UserData = { name, email, phone, password };
-    users.push(newUser);
-    localStorage.setItem("bb:users", JSON.stringify(users));
-
-    // Auto-login
-    localStorage.setItem("bb:user", JSON.stringify({
-      name,
-      email,
-      phone,
-    }));
-
-    toast({
-      title: "Account created!",
-      description: "Welcome to QuickBite!",
-    });
-
-    navigate("/");
   }
 
   return (
@@ -186,6 +131,7 @@ export default function Login() {
                     placeholder="Sampath Satya Saran"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
+                    disabled={loading}
                     className="pl-10"
                   />
                 </div>
@@ -202,6 +148,7 @@ export default function Login() {
                   placeholder="sampath@example.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
+                  disabled={loading}
                   className="pl-10"
                 />
               </div>
@@ -218,6 +165,7 @@ export default function Login() {
                     placeholder="9291493225"
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
+                    disabled={loading}
                     className="pl-10"
                     maxLength={13}
                   />
@@ -235,21 +183,22 @@ export default function Login() {
                   placeholder="••••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
+                  disabled={loading}
                   className="pl-10"
                 />
               </div>
             </div>
 
-            <Button type="submit" className="w-full h-11 rounded-xl bg-gradient-primary">
+            <Button type="submit" className="w-full h-11 rounded-xl bg-gradient-primary" disabled={loading}>
               {isSignup ? (
                 <>
                   <UserPlus className="mr-2 h-4 w-4" />
-                  Create Account
+                  {loading ? "Creating..." : "Create Account"}
                 </>
               ) : (
                 <>
                   <LogIn className="mr-2 h-4 w-4" />
-                  Sign In
+                  {loading ? "Signing in..." : "Sign In"}
                 </>
               )}
             </Button>
@@ -259,6 +208,7 @@ export default function Login() {
             <button
               onClick={() => setIsSignup(!isSignup)}
               className="text-sm text-primary hover:underline"
+              disabled={loading}
             >
               {isSignup ? "Already have an account? Sign In" : "Don't have an account? Sign Up"}
             </button>
