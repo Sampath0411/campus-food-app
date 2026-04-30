@@ -15,13 +15,13 @@ import {
   Sparkles,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { useCart } from "@/context/CartContext";
 import { useGeolocation } from "@/hooks/useGeolocation";
 import { cn } from "@/lib/utils";
 
 const navItems = [
   { to: "/", label: "Home", icon: Home },
+  { to: "/search", label: "Search", icon: Search },
   { to: "/recent-orders", label: "Recent Orders", icon: ScrollText },
   { to: "/orders", label: "Track Order", icon: ScrollText },
   { to: "/group", label: "Group Orders", icon: Users },
@@ -98,14 +98,6 @@ export function AppShell({ children }: { children: ReactNode }) {
               </p>
             </div>
           </button>
-
-          <div className="relative ml-auto hidden flex-1 max-w-xl md:block">
-            <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            <Input
-              placeholder="Search restaurants, dishes, cuisines…"
-              className="h-11 rounded-full border-border bg-muted pl-11 focus-visible:ring-primary"
-            />
-          </div>
 
           <div className="ml-auto flex items-center gap-1.5 md:ml-0">
             <Button
