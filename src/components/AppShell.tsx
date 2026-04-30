@@ -77,29 +77,28 @@ export function AppShell({ children }: { children: ReactNode }) {
             <span className="hidden font-display text-lg font-bold sm:inline">QuickBite</span>
           </button>
 
-          <button
-            onClick={geo.request}
-            className="hidden items-center gap-2 rounded-full bg-muted px-3 py-1.5 transition-colors hover:bg-muted/70 md:flex"
-            title={geo.status === "granted" ? "Update your location" : "Use my location"}
-          >
-            <MapPin className={cn("h-4 w-4", geo.coords ? "text-accent" : "text-primary")} />
-            <div className="text-left text-xs leading-tight max-w-[200px]">
-              <p className="font-semibold truncate">
-                {geo.address || (geo.coords ? "Location on" : "Set location")}
-              </p>
-              <p className="text-muted-foreground truncate">
-                {!geo.coords
-                  ? geo.status === "denied"
-                    ? "Permission denied"
-                    : "Tap to share"
-                  : geo.address
-                  ? "Click to update"
-                  : "Fetching address..."}
-              </p>
-            </div>
-          </button>
-
-          <div className="ml-auto flex items-center gap-1.5 md:ml-0">
+          <div className="ml-auto flex items-center gap-1.5">
+            <button
+              onClick={geo.request}
+              className="hidden items-center gap-2 rounded-full bg-muted px-3 py-1.5 transition-colors hover:bg-muted/70 md:flex"
+              title={geo.status === "granted" ? "Update your location" : "Use my location"}
+            >
+              <MapPin className={cn("h-4 w-4", geo.coords ? "text-accent" : "text-primary")} />
+              <div className="text-left text-xs leading-tight max-w-[200px]">
+                <p className="font-semibold truncate">
+                  {geo.address || (geo.coords ? "Location on" : "Set location")}
+                </p>
+                <p className="text-muted-foreground truncate">
+                  {!geo.coords
+                    ? geo.status === "denied"
+                      ? "Permission denied"
+                      : "Tap to share"
+                    : geo.address
+                    ? "Click to update"
+                    : "Fetching address..."}
+                </p>
+              </div>
+            </button>
             <Button
               variant="ghost"
               size="icon"
