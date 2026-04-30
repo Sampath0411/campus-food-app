@@ -92,7 +92,7 @@ function generateLabels(
   } else if (restaurant.priceFor2 <= 200) {
     labels.push("Budget Pick 💰");
   }
-  if (restaurant.eta.replace(/\D/g, "") <= "20") {
+  if (restaurant.eta <= 20) {
     labels.push("Fast Delivery ⚡");
   }
   if (restaurant.rating >= 4.5) {
