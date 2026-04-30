@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { User, Phone, MapPin, Home, Building, Check, ArrowLeft } from "lucide-react";
+import { User, Phone, Mail, MapPin, Home, Building, Check, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -21,7 +21,9 @@ interface Address {
 export default function EditProfile() {
   const navigate = useNavigate();
   const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
+  const [password, setPassword] = useState("");
   const [address, setAddress] = useState<Address>({
     doorNo: "",
     flatNo: "",
@@ -37,6 +39,7 @@ export default function EditProfile() {
     if (savedUser) {
       const user = JSON.parse(savedUser);
       setName(user.name || "");
+      setEmail(user.email || "");
       setPhone(user.phone || "");
     }
     if (savedAddress) {
@@ -49,7 +52,7 @@ export default function EditProfile() {
     if (!name.trim() || !phone.trim()) {
       toast({
         title: "Missing info",
-        description: "Please enter both name and phone number.",
+        description: "Please enter name and phone number.",
       });
       return;
     }
@@ -67,13 +70,36 @@ export default function EditProfile() {
       });
       return;
     }
-    // Save user info and address
-    localStorage.setItem("bb:user", JSON.stringify({ name, phone, createdAt: Date.now() }));
+
+    // Get current email to find user in bb:users
+    const currentUser = localStorage.getItem("bb:user");
+    const currentEmail = currentUser ? JSON.parse(currentUser).email : "";
+
+    // Update user in bb:users array
+    const storedUsers = localStorage.getItem("bb:users");
+    if (storedUsers) {
+      const users: any[] = JSON.parse(storedUsers);
+      const userIndex = users.findIndex(u => u.email === currentEmail);
+      if (userIndex !== -1) {
+        users[userIndex] = {
+          ...users[userIndex],
+          name,
+          phone,
+          ...(password ? { password } : {}),
+        };
+        localStorage.setItem("bb:users", JSON.stringify(users));
+      }
+    }
+
+    // Update current session user
+    localStorage.setItem("bb:user", JSON.stringify({ name, email, phone }));
     localStorage.setItem("bb:address", JSON.stringify(address));
+
     toast({
       title: "Profile updated",
       description: "Your details have been saved.",
     });
+
     navigate("/profile");
   }
 
@@ -113,6 +139,22 @@ export default function EditProfile() {
               </div>
             </div>
 
+            {/* Email (read-only) */}
+            <div className="space-y-2">
+              <Label htmlFor="email">Email</Label>
+              <div className="relative">
+                <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                <Input
+                  id="email"
+                  type="email"
+                  value={email}
+                  disabled
+                  className="pl-10 bg-muted cursor-not-allowed"
+                />
+              </div>
+              <p className="text-xs text-muted-foreground">Email cannot be changed</p>
+            </div>
+
             {/* Phone */}
             <div className="space-y-2">
               <Label htmlFor="phone">Phone Number</Label>
@@ -126,6 +168,24 @@ export default function EditProfile() {
                   onChange={(e) => setPhone(e.target.value)}
                   className="pl-10"
                   maxLength={13}
+                />
+              </div>
+            </div>
+
+            {/* Password (optional) */}
+            <div className="space-y-2">
+              <Label htmlFor="password">New Password (optional)</Label>
+              <div className="relative">
+                <div className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                </div>
+                <Input
+                  id="password"
+                  type="password"
+                  placeholder="Leave blank to keep current"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="pl-10"
                 />
               </div>
             </div>

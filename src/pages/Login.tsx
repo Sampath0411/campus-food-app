@@ -1,26 +1,26 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { User, Phone, MapPin, Home, Building, Check } from "lucide-react";
+import { User, Mail, Phone, Lock, LogIn, UserPlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
 import { toast } from "@/hooks/use-toast";
 
-type AddressType = "home" | "work";
-
-interface Address {
-  doorNo: string;
-  flatNo?: string;
-  street?: string;
-  area?: string;
-  city?: string;
-  type: AddressType;
+interface UserData {
+  name: string;
+  email: string;
+  phone: string;
+  password: string;
 }
 
 export default function Login() {
   const navigate = useNavigate();
-  const [step, setStep] = useState(1);
+  const [isSignup, setIsSignup] = useState(false);
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
+  const [password, setPassword] = useState("");
 
   // Redirect if already logged in
   useEffect(() => {
@@ -29,26 +29,81 @@ export default function Login() {
       navigate("/");
     }
   }, [navigate]);
-  const [name, setName] = useState("");
-  const [phone, setPhone] = useState("");
-  const [address, setAddress] = useState<Address>({
-    doorNo: "",
-    flatNo: "",
-    street: "",
-    area: "",
-    city: "",
-    type: "home",
-  });
 
-  function handlePhoneSubmit(e: React.FormEvent) {
+  function handleLogin(e: React.FormEvent) {
     e.preventDefault();
-    if (!name.trim() || !phone.trim()) {
+
+    if (!email.trim() || !password.trim()) {
       toast({
-        title: "Missing info",
-        description: "Please enter both name and phone number.",
+        title: "Missing fields",
+        description: "Please enter email and password.",
       });
       return;
     }
+
+    // Check if user exists in localStorage
+    const storedUsers = localStorage.getItem("bb:users");
+    if (!storedUsers) {
+      toast({
+        title: "No account",
+        description: "Please create an account first.",
+      });
+      return;
+    }
+
+    const users: UserData[] = JSON.parse(storedUsers);
+    const user = users.find(u => u.email.toLowerCase() === email.toLowerCase());
+
+    if (!user) {
+      toast({
+        title: "User not found",
+        description: "No account with this email.",
+      });
+      return;
+    }
+
+    if (user.password !== password) {
+      toast({
+        title: "Invalid password",
+        description: "Please check your password.",
+      });
+      return;
+    }
+
+    // Login successful
+    localStorage.setItem("bb:user", JSON.stringify({
+      name: user.name,
+      email: user.email,
+      phone: user.phone,
+    }));
+
+    toast({
+      title: "Welcome back!",
+      description: `Hello, ${user.name}!`,
+    });
+
+    navigate("/");
+  }
+
+  function handleSignup(e: React.FormEvent) {
+    e.preventDefault();
+
+    if (!name.trim() || !email.trim() || !phone.trim() || !password.trim()) {
+      toast({
+        title: "Missing fields",
+        description: "Please fill in all fields.",
+      });
+      return;
+    }
+
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      toast({
+        title: "Invalid email",
+        description: "Enter a valid email address.",
+      });
+      return;
+    }
+
     if (!/^[6-9]\d{9}$/.test(phone.replace(/\s/g, ""))) {
       toast({
         title: "Invalid phone",
@@ -56,29 +111,45 @@ export default function Login() {
       });
       return;
     }
-    // Save user info
-    localStorage.setItem(
-      "bb:user",
-      JSON.stringify({ name, phone, createdAt: Date.now() })
-    );
-    setStep(2);
-  }
 
-  function handleAddressSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    if (!address.doorNo.trim()) {
+    if (password.length < 6) {
       toast({
-        title: "Missing address",
-        description: "Please enter at least door/house number.",
+        title: "Weak password",
+        description: "Password must be at least 6 characters.",
       });
       return;
     }
-    // Save address
-    localStorage.setItem("bb:address", JSON.stringify(address));
+
+    // Check if email already exists
+    const storedUsers = localStorage.getItem("bb:users");
+    const users: UserData[] = storedUsers ? JSON.parse(storedUsers) : [];
+
+    if (users.find(u => u.email.toLowerCase() === email.toLowerCase())) {
+      toast({
+        title: "Email exists",
+        description: "Please login instead.",
+      });
+      setIsSignup(false);
+      return;
+    }
+
+    // Save new user
+    const newUser: UserData = { name, email, phone, password };
+    users.push(newUser);
+    localStorage.setItem("bb:users", JSON.stringify(users));
+
+    // Auto-login
+    localStorage.setItem("bb:user", JSON.stringify({
+      name,
+      email,
+      phone,
+    }));
+
     toast({
-      title: "Profile complete",
+      title: "Account created!",
       description: "Welcome to QuickBite!",
     });
+
     navigate("/");
   }
 
@@ -100,13 +171,12 @@ export default function Login() {
               <span className="text-primary">Bite</span>
             </h1>
             <p className="text-sm text-muted-foreground">
-              {step === 1 ? "Enter your details to get started" : "Add your delivery address"}
+              {isSignup ? "Create your account" : "Sign in to continue"}
             </p>
           </div>
 
-          {/* Step 1: Name & Phone */}
-          {step === 1 && (
-            <form onSubmit={handlePhoneSubmit} className="space-y-4">
+          <form onSubmit={isSignup ? handleSignup : handleLogin} className="space-y-4">
+            {isSignup && (
               <div className="space-y-2">
                 <Label htmlFor="name">Full Name</Label>
                 <div className="relative">
@@ -120,7 +190,24 @@ export default function Login() {
                   />
                 </div>
               </div>
+            )}
 
+            <div className="space-y-2">
+              <Label htmlFor="email">Email</Label>
+              <div className="relative">
+                <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="sampath@example.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
+            </div>
+
+            {isSignup && (
               <div className="space-y-2">
                 <Label htmlFor="phone">Phone Number</Label>
                 <div className="relative">
@@ -135,121 +222,47 @@ export default function Login() {
                     maxLength={13}
                   />
                 </div>
-                <p className="text-xs text-muted-foreground">
-                  We'll send an OTP for verification (demo - no actual OTP)
-                </p>
               </div>
+            )}
 
-              <Button type="submit" className="w-full h-11 rounded-xl bg-gradient-primary">
-                Continue
-              </Button>
-            </form>
-          )}
-
-          {/* Step 2: Address */}
-          {step === 2 && (
-            <form onSubmit={handleAddressSubmit} className="space-y-4">
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-2">
-                  <Label htmlFor="doorNo">Door/House No *</Label>
-                  <Input
-                    id="doorNo"
-                    placeholder="12-3-45"
-                    value={address.doorNo}
-                    onChange={(e) => setAddress({ ...address, doorNo: e.target.value })}
-                    required
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="flatNo">Flat No (optional)</Label>
-                  <Input
-                    id="flatNo"
-                    placeholder="A-101"
-                    value={address.flatNo}
-                    onChange={(e) => setAddress({ ...address, flatNo: e.target.value })}
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="street">Street/Colony</Label>
+            <div className="space-y-2">
+              <Label htmlFor="password">Password</Label>
+              <div className="relative">
+                <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                 <Input
-                  id="street"
-                  placeholder="Gandhi Nagar"
-                  value={address.street}
-                  onChange={(e) => setAddress({ ...address, street: e.target.value })}
+                  id="password"
+                  type="password"
+                  placeholder="••••••••"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="pl-10"
                 />
               </div>
+            </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="area">Area/Locality</Label>
-                <Input
-                  id="area"
-                  placeholder="Dwaraka Nagar"
-                  value={address.area}
-                  onChange={(e) => setAddress({ ...address, area: e.target.value })}
-                />
-              </div>
+            <Button type="submit" className="w-full h-11 rounded-xl bg-gradient-primary">
+              {isSignup ? (
+                <>
+                  <UserPlus className="mr-2 h-4 w-4" />
+                  Create Account
+                </>
+              ) : (
+                <>
+                  <LogIn className="mr-2 h-4 w-4" />
+                  Sign In
+                </>
+              )}
+            </Button>
+          </form>
 
-              <div className="space-y-2">
-                <Label htmlFor="city">City</Label>
-                <Input
-                  id="city"
-                  placeholder="Visakhapatnam"
-                  value={address.city}
-                  onChange={(e) => setAddress({ ...address, city: e.target.value })}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label>Address Type</Label>
-                <div className="grid grid-cols-2 gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setAddress({ ...address, type: "home" })}
-                    className={`flex items-center justify-center gap-2 rounded-xl border p-3 transition-colors ${
-                      address.type === "home"
-                        ? "border-primary bg-primary/10 text-primary"
-                        : "border-border hover:bg-muted"
-                    }`}
-                  >
-                    <Home className="h-4 w-4" />
-                    <span className="font-semibold">Home</span>
-                    {address.type === "home" && <Check className="h-4 w-4 text-primary" />}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setAddress({ ...address, type: "work" })}
-                    className={`flex items-center justify-center gap-2 rounded-xl border p-3 transition-colors ${
-                      address.type === "work"
-                        ? "border-primary bg-primary/10 text-primary"
-                        : "border-border hover:bg-muted"
-                    }`}
-                  >
-                    <Building className="h-4 w-4" />
-                    <span className="font-semibold">Work</span>
-                    {address.type === "work" && <Check className="h-4 w-4 text-primary" />}
-                  </button>
-                </div>
-              </div>
-
-              <Button type="submit" className="w-full h-11 rounded-xl bg-gradient-primary">
-                <MapPin className="mr-2 h-4 w-4" />
-                Save Address & Continue
-              </Button>
-
-              <Button
-                type="button"
-                variant="ghost"
-                className="w-full"
-                onClick={() => {
-                  setStep(1);
-                }}
-              >
-                Back
-              </Button>
-            </form>
-          )}
+          <div className="text-center">
+            <button
+              onClick={() => setIsSignup(!isSignup)}
+              className="text-sm text-primary hover:underline"
+            >
+              {isSignup ? "Already have an account? Sign In" : "Don't have an account? Sign Up"}
+            </button>
+          </div>
         </CardContent>
       </Card>
     </div>
