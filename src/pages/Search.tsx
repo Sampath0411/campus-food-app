@@ -50,8 +50,8 @@ export default function Search() {
       if (filters.nonVeg && !r.tags.includes("Non-veg")) return false;
       if (filters.rating4 && r.rating < 4.0) return false;
       if (filters.fastDelivery && !r.fastDelivery) return false;
-      if (filters.under200 && r.priceRange > 200) return false;
-      if (filters.under300 && r.priceRange > 300) return false;
+      if (filters.under200 && r.priceFor2 > 200) return false;
+      if (filters.under300 && r.priceFor2 > 300) return false;
 
       return matchesQuery;
     });

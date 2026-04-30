@@ -24,6 +24,12 @@ export const restaurants: Restaurant[] = [
   { id: "smoke", name: "Smokehouse 21", cuisine: "BBQ • Grills", rating: 4.5, eta: "32 min", priceFor2: 320, img: foodBrisket, tags: ["Non-veg"] },
   { id: "mamas2", name: "Hostel Hub Tiffins", cuisine: "Thali • North Indian", rating: 4.3, eta: "15 min", priceFor2: 120, img: foodMac, tags: ["Budget", "Veg"], offer: "Flat ₹40 OFF" },
   { id: "green2", name: "Protein Pantry", cuisine: "Healthy • High-protein", rating: 4.6, eta: "24 min", priceFor2: 280, img: foodBowl, tags: ["Healthy"] },
+  { id: "biryani", name: "Biryani Blues", cuisine: "Hyderabadi • Dum", rating: 4.5, eta: "25 min", priceFor2: 240, img: foodMac, tags: ["Non-veg", "Spicy"], offer: "20% OFF" },
+  { id: "pizza", name: "Campus Pizza", cuisine: "Italian • Fast Food", rating: 4.2, eta: "20 min", priceFor2: 200, img: foodMac, tags: ["Veg", "Non-veg"], offer: "Buy 1 Get 1" },
+  { id: "dosa", name: "Dosa Plaza", cuisine: "South Indian", rating: 4.4, eta: "12 min", priceFor2: 100, img: foodBowl, tags: ["Veg", "Breakfast"], offer: "Free drink" },
+  { id: "chicken", name: "Chicken Republic", cuisine: "Fried Chicken", rating: 4.3, eta: "30 min", priceFor2: 280, img: foodBrisket, tags: ["Non-veg"], offer: null },
+  { id: "chaat", name: "Chaat Corner", cuisine: "Street Food", rating: 4.1, eta: "10 min", priceFor2: 80, img: foodBowl, tags: ["Veg", "Snacks"], offer: null },
+  { id: "rolls", name: "Kathi Roll Company", cuisine: "Rolls • Wraps", rating: 4.0, eta: "18 min", priceFor2: 150, img: foodMac, tags: ["Non-veg", "Veg"], offer: "₹50 OFF" },
 ];
 
 export type MenuItem = {
