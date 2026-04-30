@@ -63,15 +63,15 @@ const App = () => {
               <Route path="/login" element={<Login />} />
               <Route path="/edit-profile" element={<ProtectedRoute><EditProfile /></ProtectedRoute>} />
               <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
-              <Route path="/r/:id" element={withShell(<ProtectedRoute><Restaurant /></ProtectedRoute>} />
-              <Route path="/cart" element={withShell(<ProtectedRoute><Cart /></ProtectedRoute>} />
-              <Route path="/orders" element={withShell(<ProtectedRoute><OrderTracking /></ProtectedRoute>} />
-              <Route path="/recent-orders" element={withShell(<ProtectedRoute><RecentOrders /></ProtectedRoute>} />
-              <Route path="/group" element={withShell(<ProtectedRoute><GroupOrder /></ProtectedRoute>} />
-              <Route path="/g/:code" element={withShell(<ProtectedRoute><GroupOrder /></ProtectedRoute>} />
-              <Route path="/search" element={withShell(<ProtectedRoute><Search /></ProtectedRoute>} />
-              <Route path="/profile" element={withShell(<ProtectedRoute><Profile /></ProtectedRoute>} />
-              <Route path="/scheduled" element={withShell(<ProtectedRoute><Scheduled /></ProtectedRoute>} />
+              <Route path="/r/:id" element={withShell(<ProtectedRoute><Restaurant /></ProtectedRoute>)} />
+              <Route path="/cart" element={withShell(<ProtectedRoute><Cart /></ProtectedRoute>)} />
+              <Route path="/orders" element={withShell(<ProtectedRoute><OrderTracking /></ProtectedRoute>)} />
+              <Route path="/recent-orders" element={withShell(<ProtectedRoute><RecentOrders /></ProtectedRoute>)} />
+              <Route path="/group" element={withShell(<ProtectedRoute><GroupOrder /></ProtectedRoute>)} />
+              <Route path="/g/:code" element={withShell(<ProtectedRoute><GroupOrder /></ProtectedRoute>)} />
+              <Route path="/search" element={withShell(<ProtectedRoute><Search /></ProtectedRoute>)} />
+              <Route path="/profile" element={withShell(<ProtectedRoute><Profile /></ProtectedRoute>)} />
+              <Route path="/scheduled" element={withShell(<ProtectedRoute><Scheduled /></ProtectedRoute>)} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </CartProvider>
