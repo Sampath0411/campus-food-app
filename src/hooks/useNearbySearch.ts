@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
-import { useGeolocation, haversineKm, GeoCoord } from "./useGeolocation";
+import { useGeolocation, haversineKm, etaMinutes, GeoCoord } from "./useGeolocation";
 import { restaurants, Restaurant, menu, MenuItem } from "@/data/mock";
 
 type SearchFilters = {
