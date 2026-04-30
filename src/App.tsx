@@ -8,6 +8,7 @@ import { CartProvider } from "@/context/CartContext";
 import { AppShell } from "@/components/AppShell";
 import { Preloader } from "@/components/Preloader";
 import Login from "./pages/Login.tsx";
+import EditProfile from "./pages/EditProfile.tsx";
 import Index from "./pages/Index.tsx";
 import Restaurant from "./pages/Restaurant.tsx";
 import Cart from "./pages/Cart.tsx";
@@ -46,6 +47,7 @@ const App = () => {
           <CartProvider>
             <Routes>
               <Route path="/login" element={<Login />} />
+              <Route path="/edit-profile" element={<ProtectedRoute><EditProfile /></ProtectedRoute>} />
               <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
               <Route path="/r/:id" element={withShell(<ProtectedRoute><Restaurant /></ProtectedRoute>)} />
               <Route path="/cart" element={withShell(<ProtectedRoute><Cart /></ProtectedRoute>)} />

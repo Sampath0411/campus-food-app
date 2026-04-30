@@ -54,7 +54,7 @@ export default function Profile() {
             {user?.phone || "Not set"}
           </div>
         </div>
-        <Button size="sm" variant="outline" className="rounded-full" onClick={() => navigate("/login")}>
+        <Button size="sm" variant="outline" className="rounded-full" onClick={() => navigate("/edit-profile")}>
           <Edit className="h-4 w-4" />
         </Button>
       </header>
@@ -86,7 +86,7 @@ export default function Profile() {
               size="sm"
               variant="outline"
               className="rounded-full"
-              onClick={() => navigate("/login")}
+              onClick={() => navigate("/edit-profile")}
             >
               Edit
             </Button>
