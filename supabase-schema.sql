@@ -1,31 +1,39 @@
 -- Create users table
-CREATE TABLE IF NOT EXISTS users (
-  id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+CREATE TABLE IF NOT EXISTS public.users (
+  id UUID PRIMARY KEY,
   name TEXT NOT NULL,
-  email TEXT NOT NULL UNIQUE,
+  email TEXT NOT NULL,
   phone TEXT NOT NULL,
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- Enable Row Level Security
-ALTER TABLE users ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.users ENABLE ROW LEVEL SECURITY;
+
+-- Drop existing policies if any
+DROP POLICY IF EXISTS "Users can view own profile" ON public.users;
+DROP POLICY IF EXISTS "Users can update own profile" ON public.users;
+DROP POLICY IF EXISTS "Users can insert own profile" ON public.users;
+DROP POLICY IF EXISTS "Enable insert for authenticated users only" ON public.users;
+DROP POLICY IF EXISTS "Enable read access for all users" ON public.users;
+DROP POLICY IF EXISTS "Enable update for users based on id" ON public.users;
 
 -- Users can read their own data
-CREATE POLICY "Users can view own profile"
-  ON users
+CREATE POLICY "Enable users to read own profile"
+  ON public.users
   FOR SELECT
   USING (auth.uid() = id);
 
 -- Users can update their own data
-CREATE POLICY "Users can update own profile"
-  ON users
+CREATE POLICY "Enable users to update own profile"
+  ON public.users
   FOR UPDATE
   USING (auth.uid() = id);
 
--- Users can insert their own data (on signup)
-CREATE POLICY "Users can insert own profile"
-  ON users
+-- Allow insert during signup (user creates their own row)
+CREATE POLICY "Enable insert for authenticated users"
+  ON public.users
   FOR INSERT
   WITH CHECK (auth.uid() = id);
 
@@ -36,9 +44,9 @@ BEGIN
   INSERT INTO public.users (id, name, email, phone)
   VALUES (
     NEW.id,
-    NEW.raw_user_meta_data->>'name',
+    COALESCE(NEW.raw_user_meta_data->>'name', ''),
     NEW.email,
-    NEW.raw_user_meta_data->>'phone'
+    COALESCE(NEW.raw_user_meta_data->>'phone', '')
   );
   RETURN NEW;
 END;

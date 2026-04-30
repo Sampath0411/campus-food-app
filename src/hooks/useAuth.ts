@@ -77,14 +77,15 @@ export function useAuth() {
 
     if (error) throw error;
 
-    // Insert user profile
+    // Insert user profile after auth signup
     if (data.user) {
-      await supabase.from("users").insert({
+      const { error: insertError } = await supabase.from("users").insert({
         id: data.user.id,
         name,
         email,
         phone,
       });
+      if (insertError) throw insertError;
     }
 
     return data;
