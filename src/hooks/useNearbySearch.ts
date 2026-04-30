@@ -202,45 +202,29 @@ export function useNearbySearch() {
   const geo = useGeolocation();
   const userLocation = geo.coords || VIZAG_CENTER;
 
-  // Fetch OSM restaurants when location changes
+  // Load mock data immediately, then fetch OSM in background
   useEffect(() => {
     let mounted = true;
-    setLoading(true);
 
-    const loadData = async () => {
-      try {
-        const places = await fetchOSMRestaurants(userLocation.lat, userLocation.lng);
+    // Always show mock data first (instant)
+    const mockWithCoords = restaurants.map((r) => ({
+      ...r,
+      lat: userLocation.lat + (Math.random() - 0.5) * 0.08,
+      lng: userLocation.lng + (Math.random() - 0.5) * 0.08,
+    }));
+    setOsmPlaces(mockWithCoords);
+    setLoading(false);
 
-        if (mounted) {
-          if (places.length > 0) {
-            setOsmPlaces(places);
-          } else {
-            // Fallback: mock data with coords around user location
-            const mockWithCoords = restaurants.map((r) => ({
-              ...r,
-              lat: userLocation.lat + (Math.random() - 0.5) * 0.08,
-              lng: userLocation.lng + (Math.random() - 0.5) * 0.08,
-            }));
-            console.log(`[Fallback] Using ${mockWithCoords.length} mock restaurants`);
-            setOsmPlaces(mockWithCoords);
-          }
-          setLoading(false);
-        }
-      } catch (err) {
-        if (mounted) {
-          // Emergency fallback
-          const mockWithCoords = restaurants.map((r) => ({
-            ...r,
-            lat: userLocation.lat + (Math.random() - 0.5) * 0.08,
-            lng: userLocation.lng + (Math.random() - 0.5) * 0.08,
-          }));
-          setOsmPlaces(mockWithCoords);
-          setLoading(false);
-        }
+    // Then try to fetch real OSM data (non-blocking)
+    fetchOSMRestaurants(userLocation.lat, userLocation.lng).then((places) => {
+      if (mounted && places.length > 5) {
+        console.log(`[OSM] Replacing with ${places.length} real restaurants`);
+        setOsmPlaces(places);
       }
-    };
+    }).catch((err) => {
+      console.warn("[OSM] Background fetch failed, keeping mock:", err.message);
+    });
 
-    loadData();
     return () => { mounted = false; };
   }, [userLocation.lat, userLocation.lng]);
 
