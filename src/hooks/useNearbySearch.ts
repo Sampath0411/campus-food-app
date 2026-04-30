@@ -144,8 +144,11 @@ function osmToRestaurant(place: OSMPlace, index: number): Restaurant & { lat: nu
   };
 }
 
-// Fetch real restaurants from Overpass API
+// Fetch real restaurants from Overpass API with timeout
 async function fetchOSMRestaurants(lat: number, lng: number): Promise<(Restaurant & { lat: number; lng: number })[]> {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 8000); // 8 second timeout
+
   try {
     const query = `
       [out:json];
@@ -161,16 +164,23 @@ async function fetchOSMRestaurants(lat: number, lng: number): Promise<(Restauran
     const res = await fetch("https://overpass-api.de/api/interpreter", {
       method: "POST",
       body: query,
+      signal: controller.signal,
     });
 
-    if (!res.ok) throw new Error("Overpass API error");
+    clearTimeout(timeoutId);
+
+    if (!res.ok) throw new Error(`Overpass API error: ${res.status}`);
 
     const data = await res.json();
-    return data.elements
+    const places = data.elements
       .filter((e: OSMPlace) => e.tags?.name)
       .map((place: OSMPlace, i: number) => osmToRestaurant(place, i));
-  } catch (err) {
-    console.error("Failed to fetch OSM restaurants:", err);
+
+    console.log(`[OSM] Found ${places.length} restaurants near ${lat.toFixed(2)}, ${lng.toFixed(2)}`);
+    return places;
+  } catch (err: any) {
+    clearTimeout(timeoutId);
+    console.warn("[OSM] Fetch failed, using fallback:", err.message);
     return [];
   }
 }
@@ -197,21 +207,40 @@ export function useNearbySearch() {
     let mounted = true;
     setLoading(true);
 
-    fetchOSMRestaurants(userLocation.lat, userLocation.lng).then((places) => {
-      if (mounted && places.length > 0) {
-        setOsmPlaces(places);
-      } else if (mounted && places.length === 0) {
-        // Fallback to mock data with coordinates around user location
-        const mockWithCoords = restaurants.map((r, i) => ({
-          ...r,
-          lat: userLocation.lat + (Math.random() - 0.5) * 0.08,
-          lng: userLocation.lng + (Math.random() - 0.5) * 0.08,
-        }));
-        setOsmPlaces(mockWithCoords);
-      }
-      setLoading(false);
-    });
+    const loadData = async () => {
+      try {
+        const places = await fetchOSMRestaurants(userLocation.lat, userLocation.lng);
 
+        if (mounted) {
+          if (places.length > 0) {
+            setOsmPlaces(places);
+          } else {
+            // Fallback: mock data with coords around user location
+            const mockWithCoords = restaurants.map((r) => ({
+              ...r,
+              lat: userLocation.lat + (Math.random() - 0.5) * 0.08,
+              lng: userLocation.lng + (Math.random() - 0.5) * 0.08,
+            }));
+            console.log(`[Fallback] Using ${mockWithCoords.length} mock restaurants`);
+            setOsmPlaces(mockWithCoords);
+          }
+          setLoading(false);
+        }
+      } catch (err) {
+        if (mounted) {
+          // Emergency fallback
+          const mockWithCoords = restaurants.map((r) => ({
+            ...r,
+            lat: userLocation.lat + (Math.random() - 0.5) * 0.08,
+            lng: userLocation.lng + (Math.random() - 0.5) * 0.08,
+          }));
+          setOsmPlaces(mockWithCoords);
+          setLoading(false);
+        }
+      }
+    };
+
+    loadData();
     return () => { mounted = false; };
   }, [userLocation.lat, userLocation.lng]);
 
