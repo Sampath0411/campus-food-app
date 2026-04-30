@@ -1,10 +1,11 @@
-import { Search as SearchIcon, Filter, Leaf, Flame, Star, X } from "lucide-react";
+import { Search as SearchIcon, Filter, Leaf, Flame, Star, MapPin, Globe } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useState, useMemo } from "react";
 import { restaurants } from "@/data/mock";
 import { RestaurantCard } from "@/components/RestaurantCard";
 import { cn } from "@/lib/utils";
+import { RestaurantMap } from "@/components/RestaurantMap";
 
 type Filters = {
   veg: boolean;
@@ -14,6 +15,13 @@ type Filters = {
   under200: boolean;
   under300: boolean;
 };
+
+// Mock data with coordinates for map
+const restaurantsWithCoords = restaurants.map((r, i) => ({
+  ...r,
+  lat: 17.6868 + (Math.random() - 0.5) * 0.1,
+  lng: 83.2185 + (Math.random() - 0.5) * 0.1,
+}));
 
 export default function Search() {
   const [q, setQ] = useState("");
@@ -26,19 +34,18 @@ export default function Search() {
     under300: false,
   });
   const [showFilters, setShowFilters] = useState(false);
+  const [view, setView] = useState<"list" | "map">("list");
 
   const activeFilterCount = Object.values(filters).filter(Boolean).length;
 
   const filtered = useMemo(() => {
-    return restaurants.filter((r) => {
-      // Search query match
+    return restaurantsWithCoords.filter((r) => {
       const matchesQuery = q
         ? r.name.toLowerCase().includes(q.toLowerCase()) ||
           r.cuisine.toLowerCase().includes(q.toLowerCase()) ||
           r.tags.some((t) => t.toLowerCase().includes(q.toLowerCase()))
         : true;
 
-      // Filter matches
       if (filters.veg && !r.tags.includes("Veg")) return false;
       if (filters.nonVeg && !r.tags.includes("Non-veg")) return false;
       if (filters.rating4 && r.rating < 4.0) return false;
@@ -67,9 +74,29 @@ export default function Search() {
 
   return (
     <div className="space-y-6">
-      <header>
-        <p className="text-sm text-muted-foreground">Search</p>
-        <h1 className="font-display text-2xl font-bold md:text-3xl">Find your next bite 🔎</h1>
+      <header className="flex items-center justify-between">
+        <div>
+          <p className="text-sm text-muted-foreground">Search</p>
+          <h1 className="font-display text-2xl font-bold md:text-3xl">Find your next bite 🔎</h1>
+        </div>
+        <div className="flex gap-2">
+          <Button
+            variant={view === "list" ? "default" : "outline"}
+            size="sm"
+            className="rounded-full"
+            onClick={() => setView("list")}
+          >
+            List
+          </Button>
+          <Button
+            variant={view === "map" ? "default" : "outline"}
+            size="sm"
+            className="rounded-full"
+            onClick={() => setView("map")}
+          >
+            <MapPin className="mr-1.5 h-4 w-4" /> Map
+          </Button>
+        </div>
       </header>
 
       {/* Search input */}
@@ -82,6 +109,11 @@ export default function Search() {
           value={q}
           onChange={(e) => setQ(e.target.value)}
         />
+        {q && (
+          <div className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">
+            Press Enter to search online
+          </div>
+        )}
       </div>
 
       {/* Filter toggle + clear */}
@@ -189,12 +221,50 @@ export default function Search() {
         </div>
       )}
 
+      {/* Map View */}
+      {view === "map" && (
+        <section className="rounded-2xl border border-border bg-card p-4 shadow-soft">
+          <RestaurantMap restaurants={filtered} />
+        </section>
+      )}
+
       {/* Results */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {filtered.map((r) => (
-          <RestaurantCard key={r.id} r={r} />
-        ))}
-      </div>
+      {view === "list" && (
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {filtered.map((r) => (
+            <RestaurantCard key={r.id} r={r} />
+          ))}
+        </div>
+      )}
+
+      {/* Online search suggestion */}
+      {q.length > 2 && (
+        <div className="rounded-2xl border border-border bg-card p-4 text-center">
+          <p className="text-sm text-muted-foreground">
+            Looking for "{q}"? Try these nearby options above, or search on:
+          </p>
+          <div className="mt-3 flex justify-center gap-2">
+            <a
+              href={`https://www.zomato.com/vizag/restaurants?q=${encodeURIComponent(q)}`}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <Button variant="outline" size="sm" className="rounded-full">
+                <Globe className="mr-1.5 h-4 w-4" /> Search on Zomato
+              </Button>
+            </a>
+            <a
+              href={`https://www.swiggy.com/search?query=${encodeURIComponent(q)}&sortBy=RELEVANCE&page=1&offset=0&latitude=17.686815&longitude=83.2184757`}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <Button variant="outline" size="sm" className="rounded-full">
+                <Globe className="mr-1.5 h-4 w-4" /> Search on Swiggy
+              </Button>
+            </a>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

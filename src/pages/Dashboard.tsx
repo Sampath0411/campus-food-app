@@ -1,16 +1,19 @@
-import { useState } from "react";
-import { Sparkles, ArrowRight, Flame, Leaf, Star } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Sparkles, ArrowRight, Flame, Leaf, Star, MapPin } from "lucide-react";
 import { Slider } from "@/components/ui/slider";
 import { Button } from "@/components/ui/button";
 import { aiPicks, categories, restaurants } from "@/data/mock";
 import { RestaurantCard } from "@/components/RestaurantCard";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/hooks/useAuth";
 
 const filterChips = ["Filter", "Sort by", "Fast Delivery", "Rating 4.0+", "Pure Veg", "Offers", "₹100–300"];
 
 export default function Dashboard() {
+  const { user } = useAuth();
   const [budget, setBudget] = useState([200]);
   const [active, setActive] = useState<string | null>(null);
+  const userName = user?.name?.split(' ')[0] || 'there';
 
   return (
     <div className="space-y-8">
@@ -19,7 +22,7 @@ export default function Dashboard() {
         <div>
           <p className="text-sm text-muted-foreground">Good evening</p>
           <h1 className="font-display text-3xl font-bold md:text-4xl">
-            Sampath <span className="inline-block animate-soft-pulse">👋</span>
+            {userName} <span className="inline-block animate-soft-pulse">👋</span>
           </h1>
           <p className="mt-1 text-sm text-muted-foreground">
             What's the move tonight? Your AI picked 6 meals under ₹150.
