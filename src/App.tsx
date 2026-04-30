@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Route, Routes, Navigate } from "react-router-dom";
+import { supabase } from "@/lib/supabase";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -24,14 +25,27 @@ const queryClient = new QueryClient();
 
 const withShell = (el: React.ReactNode) => <AppShell>{el}</AppShell>;
 
-// Check if user is logged in
-function isLoggedIn() {
-  return !!localStorage.getItem("bb:user");
-}
-
-// Protected route wrapper
+// Protected route wrapper - checks Supabase session
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
-  return isLoggedIn() ? children : <Navigate to="/login" replace />;
+  const [checking, setChecking] = useState(true);
+  const [authenticated, setAuthenticated] = useState(false);
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setAuthenticated(!!session);
+      setChecking(false);
+    });
+  }, []);
+
+  if (checking) {
+    return (
+      <div className="min-h-screen grid place-items-center">
+        <div className="text-muted-foreground">Loading...</div>
+      </div>
+    );
+  }
+
+  return authenticated ? children : <Navigate to="/login" replace />;
 };
 
 const App = () => {
@@ -49,16 +63,15 @@ const App = () => {
               <Route path="/login" element={<Login />} />
               <Route path="/edit-profile" element={<ProtectedRoute><EditProfile /></ProtectedRoute>} />
               <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
-              <Route path="/r/:id" element={withShell(<ProtectedRoute><Restaurant /></ProtectedRoute>)} />
-              <Route path="/cart" element={withShell(<ProtectedRoute><Cart /></ProtectedRoute>)} />
-              <Route path="/orders" element={withShell(<ProtectedRoute><OrderTracking /></ProtectedRoute>)} />
-              <Route path="/recent-orders" element={withShell(<ProtectedRoute><RecentOrders /></ProtectedRoute>)} />
-              <Route path="/group" element={withShell(<ProtectedRoute><GroupOrder /></ProtectedRoute>)} />
-              <Route path="/g/:code" element={withShell(<ProtectedRoute><GroupOrder /></ProtectedRoute>)} />
-              <Route path="/search" element={withShell(<ProtectedRoute><Search /></ProtectedRoute>)} />
-              <Route path="/profile" element={withShell(<ProtectedRoute><Profile /></ProtectedRoute>)} />
-              <Route path="/scheduled" element={withShell(<ProtectedRoute><Scheduled /></ProtectedRoute>)} />
-              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+              <Route path="/r/:id" element={withShell(<ProtectedRoute><Restaurant /></ProtectedRoute>} />
+              <Route path="/cart" element={withShell(<ProtectedRoute><Cart /></ProtectedRoute>} />
+              <Route path="/orders" element={withShell(<ProtectedRoute><OrderTracking /></ProtectedRoute>} />
+              <Route path="/recent-orders" element={withShell(<ProtectedRoute><RecentOrders /></ProtectedRoute>} />
+              <Route path="/group" element={withShell(<ProtectedRoute><GroupOrder /></ProtectedRoute>} />
+              <Route path="/g/:code" element={withShell(<ProtectedRoute><GroupOrder /></ProtectedRoute>} />
+              <Route path="/search" element={withShell(<ProtectedRoute><Search /></ProtectedRoute>} />
+              <Route path="/profile" element={withShell(<ProtectedRoute><Profile /></ProtectedRoute>} />
+              <Route path="/scheduled" element={withShell(<ProtectedRoute><Scheduled /></ProtectedRoute>} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </CartProvider>
