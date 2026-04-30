@@ -83,16 +83,19 @@ export default function Search() {
 
       {/* Search input */}
       <div className="relative">
-        <SearchIcon className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+        <SearchIcon className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
         <Input
-          autoFocus
           placeholder="Try 'biryani', 'pizza', 'veg'..."
-          className="h-12 rounded-full border-border bg-card pl-11"
+          className="h-12 rounded-full border-border bg-card pl-11 cursor-text"
           value={q}
           onChange={(e) => setQ(e.target.value)}
         />
         {q && (
-          <button onClick={() => setQ("")} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
+          <button
+            onClick={() => setQ("")}
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground p-1"
+            type="button"
+          >
             <X className="h-4 w-4" />
           </button>
         )}

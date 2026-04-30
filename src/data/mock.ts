@@ -30,6 +30,15 @@ export const restaurants: Restaurant[] = [
   { id: "chicken", name: "Chicken Republic", cuisine: "Fried Chicken", rating: 4.3, eta: "30 min", priceFor2: 280, img: foodBrisket, tags: ["Non-veg"], offer: null },
   { id: "chaat", name: "Chaat Corner", cuisine: "Street Food", rating: 4.1, eta: "10 min", priceFor2: 80, img: foodBowl, tags: ["Veg", "Snacks"], offer: null },
   { id: "rolls", name: "Kathi Roll Company", cuisine: "Rolls • Wraps", rating: 4.0, eta: "18 min", priceFor2: 150, img: foodMac, tags: ["Non-veg", "Veg"], offer: "₹50 OFF" },
+  // Andhra/Vizag special
+  { id: "andhra1", name: "Rayalaseema Ruchulu", cuisine: "Andhra • Spicy", rating: 4.7, eta: "25 min", priceFor2: 250, img: foodBowl, tags: ["Non-veg", "Spicy", "Andhra"], offer: "15% OFF" },
+  { id: "andhra2", name: "Vizag Beach Biryani", cuisine: "Andhra • Biryani", rating: 4.6, eta: "30 min", priceFor2: 280, img: foodMac, tags: ["Non-veg", "Andhra", "Biryani"], offer: null },
+  { id: "andhra3", name: "Bamboo Chicken Hub", cuisine: "Tribal • Andhra", rating: 4.5, eta: "35 min", priceFor2: 300, img: foodBrisket, tags: ["Non-veg", "Andhra", "Special"], offer: "₹50 OFF" },
+  { id: "andhra4", name: "Bongulo Kitchen", cuisine: "Traditional Andhra", rating: 4.4, eta: "28 min", priceFor2: 220, img: foodBowl, tags: ["Veg", "Non-veg", "Andhra"], offer: "Free drink" },
+  { id: "andhra5", name: "Gongura Point", cuisine: "Andhra • Veg", rating: 4.3, eta: "20 min", priceFor2: 180, img: foodBowl, tags: ["Veg", "Andhra", "Spicy"], offer: null },
+  { id: "andhra6", name: "Fish Curry Corner", cuisine: "Coastal Andhra • Seafood", rating: 4.8, eta: "32 min", priceFor2: 350, img: foodBrisket, tags: ["Non-veg", "Seafood", "Andhra"], offer: "20% OFF" },
+  { id: "andhra7", name: "Pesarattu Palace", cuisine: "Breakfast • Andhra", rating: 4.5, eta: "15 min", priceFor2: 120, img: foodBowl, tags: ["Veg", "Breakfast", "Andhra"], offer: "Flat ₹30 OFF" },
+  { id: "andhra8", name: "Upma & Idli House", cuisine: "Tiffins • Andhra", rating: 4.2, eta: "12 min", priceFor2: 100, img: foodBowl, tags: ["Veg", "Breakfast", "Andhra"], offer: null },
 ];
 
 export type MenuItem = {
@@ -50,6 +59,21 @@ export const menu: MenuItem[] = [
   { id: "m4", name: "Smoked Brisket Plate", desc: "House-rub brisket, slaw, cornbread", price: 289, veg: false, img: foodBrisket, category: "Mains" },
   { id: "m5", name: "Paneer Tikka Bowl", desc: "Smoky paneer, jeera rice, mint chutney", price: 139, veg: true, img: foodBowl, category: "Bowls" },
   { id: "m6", name: "Spicy Chicken Ramen", desc: "Chili oil, corn, soft egg", price: 199, veg: false, img: foodRamen, category: "Bowls" },
+  // Andhra/Vizag dishes
+  { id: "a1", name: "Gongura Mutton", desc: "Tender mutton cooked with sorrel leaves, Andhra style", price: 299, veg: false, bestseller: true, img: foodBrisket, category: "Andhra Specials" },
+  { id: "a2", name: "Bamboo Chicken", desc: "Marinated chicken cooked in bamboo shoot (Araaku Valley special)", price: 349, veg: false, bestseller: true, img: foodBrisket, category: "Andhra Specials" },
+  { id: "a3", name: "Bongulo Chicken Curry", desc: "Traditional village-style chicken curry with country spices", price: 279, veg: false, img: foodBrisket, category: "Andhra Specials" },
+  { id: "a4", name: "Fish Pulusu", desc: "Tangy tamarind fish curry, coastal Andhra style", price: 259, veg: false, img: foodBrisket, category: "Andhra Specials" },
+  { id: "a5", name: "Pesarattu (Green Gram Dosa)", desc: "Protein-rich dosa with ginger, cumin", price: 89, veg: true, bestseller: true, img: foodBowl, category: "Breakfast" },
+  { id: "a6", name: "Upma Pesarattu", desc: "Pesarattu stuffed with upma - classic combo", price: 99, veg: true, img: foodBowl, category: "Breakfast" },
+  { id: "a7", name: "Ragi Sangati", desc: "Finger millet balls served with spicy curry", price: 119, veg: true, img: foodBowl, category: "Andhra Specials" },
+  { id: "a8", name: "Natukodi Pulusu", desc: "Country chicken curry with traditional spices", price: 289, veg: false, img: foodBrisket, category: "Andhra Specials" },
+  { id: "a9", name: "Royyala Vepudu", desc: "Prawn fry with Andhra spices", price: 329, veg: false, img: foodBrisket, category: "Andhra Specials" },
+  { id: "a10", name: "Avakai Biryani", desc: "Famous Andhra pickle biryani", price: 249, veg: false, bestseller: true, img: foodMac, category: "Biryani" },
+  { id: "a11", name: "Curd Rice", desc: "Tempered curd rice with pomegranate", price: 79, veg: true, img: foodBowl, category: "Rice" },
+  { id: "a12", name: "Gongura Pachadi", desc: "Tangy sorrel leaves chutney", price: 59, veg: true, img: foodBowl, category: "Sides" },
+  { id: "a13", name: "Bobbatlu (Puran Poli)", desc: "Sweet stuffed flatbread with jaggery", price: 99, veg: true, img: foodBowl, category: "Desserts" },
+  { id: "a14", name: "Ariselu", desc: "Traditional Andhra sweet with rice flour, jaggery", price: 89, veg: true, img: foodBowl, category: "Desserts" },
 ];
 
 export const aiPicks = [
