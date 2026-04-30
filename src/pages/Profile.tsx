@@ -48,7 +48,7 @@ export default function Profile() {
           {initials}
         </div>
         <div className="flex-1">
-          <h1 className="font-display text-2xl font-bold">{user?.name || "Guest"}</h1>
+          <h1 className="font-display text-2xl font-bold">Welcome, {user?.name || "Guest"}!</h1>
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <Phone className="h-3.5 w-3.5" />
             {user?.phone || "Not set"}

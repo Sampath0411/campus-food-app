@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { User, Phone, MapPin, Home, Building, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -21,6 +21,14 @@ interface Address {
 export default function Login() {
   const navigate = useNavigate();
   const [step, setStep] = useState(1);
+
+  // Redirect if already logged in
+  useEffect(() => {
+    const user = localStorage.getItem("bb:user");
+    if (user) {
+      navigate("/");
+    }
+  }, [navigate]);
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [address, setAddress] = useState<Address>({
