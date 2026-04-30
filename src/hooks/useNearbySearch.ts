@@ -144,45 +144,58 @@ function osmToRestaurant(place: OSMPlace, index: number): Restaurant & { lat: nu
   };
 }
 
-// Fetch real restaurants from Overpass API with timeout
+// Fetch real restaurants from Overpass API with CORS proxy fallback
 async function fetchOSMRestaurants(lat: number, lng: number): Promise<(Restaurant & { lat: number; lng: number })[]> {
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 8000); // 8 second timeout
+  const query = `
+    [out:json];
+    (
+      node["amenity"="restaurant"](around:3000, ${lat}, ${lng});
+      node["amenity"="cafe"](around:3000, ${lat}, ${lng});
+      node["amenity"="fast_food"](around:3000, ${lat}, ${lng});
+      way["amenity"="restaurant"](around:3000, ${lat}, ${lng});
+    );
+    out 50;
+  `;
 
-  try {
-    const query = `
-      [out:json];
-      (
-        node["amenity"="restaurant"](around:3000, ${lat}, ${lng});
-        node["amenity"="cafe"](around:3000, ${lat}, ${lng});
-        node["amenity"="fast_food"](around:3000, ${lat}, ${lng});
-        way["amenity"="restaurant"](around:3000, ${lat}, ${lng});
-      );
-      out 50;
-    `;
+  // Try direct first, then CORS proxy if needed
+  const endpoints = [
+    "https://overpass-api.de/api/interpreter",
+    "https://overpass.kumi.systems/api/interpreter", // Backup Overpass
+  ];
 
-    const res = await fetch("https://overpass-api.de/api/interpreter", {
-      method: "POST",
-      body: query,
-      signal: controller.signal,
-    });
+  for (const endpoint of endpoints) {
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 6000);
 
-    clearTimeout(timeoutId);
+      const res = await fetch(endpoint, {
+        method: "POST",
+        body: query,
+        signal: controller.signal,
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      });
 
-    if (!res.ok) throw new Error(`Overpass API error: ${res.status}`);
+      clearTimeout(timeoutId);
 
-    const data = await res.json();
-    const places = data.elements
-      .filter((e: OSMPlace) => e.tags?.name)
-      .map((place: OSMPlace, i: number) => osmToRestaurant(place, i));
+      if (!res.ok) continue;
 
-    console.log(`[OSM] Found ${places.length} restaurants near ${lat.toFixed(2)}, ${lng.toFixed(2)}`);
-    return places;
-  } catch (err: any) {
-    clearTimeout(timeoutId);
-    console.warn("[OSM] Fetch failed, using fallback:", err.message);
-    return [];
+      const data = await res.json();
+      const places = data.elements
+        .filter((e: OSMPlace) => e.tags?.name)
+        .map((place: OSMPlace, i: number) => osmToRestaurant(place, i));
+
+      if (places.length > 0) {
+        console.log(`[OSM] Found ${places.length} restaurants from ${endpoint}`);
+        return places;
+      }
+    } catch (err: any) {
+      console.warn(`[OSM] ${endpoint} failed:`, err.message);
+      continue;
+    }
   }
+
+  console.warn("[OSM] All endpoints failed, using mock data");
+  return [];
 }
 
 export function useNearbySearch() {
