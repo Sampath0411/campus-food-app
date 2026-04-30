@@ -18,6 +18,7 @@ import { Button } from "@/components/ui/button";
 import { useCart } from "@/context/CartContext";
 import { useGeolocation } from "@/hooks/useGeolocation";
 import { cn } from "@/lib/utils";
+import { AIConcierge } from "@/components/AIConcierge";
 
 const navItems = [
   { to: "/", label: "Home", icon: Home },
@@ -209,6 +210,9 @@ export function AppShell({ children }: { children: ReactNode }) {
           ))}
         </div>
       </nav>
+
+      {/* AI Concierge Chatbot */}
+      <AIConcierge />
     </div>
   );
 }
