@@ -27,6 +27,7 @@ export default function Search() {
     userLocation,
     geo,
     totalResults,
+    loading,
   } = useNearbySearch();
 
   const handleLocationRequest = () => {
@@ -214,8 +215,25 @@ export default function Search() {
         </div>
       )}
 
+      {/* Loading State */}
+      {loading && (
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {[1, 2, 3, 4, 5, 6].map((i) => (
+            <div key={i} className="rounded-2xl border border-border bg-card p-4">
+              <Skeleton className="h-32 w-full rounded-xl mb-3" />
+              <Skeleton className="h-5 w-3/4 mb-2" />
+              <Skeleton className="h-4 w-1/2 mb-2" />
+              <div className="flex gap-2 mt-3">
+                <Skeleton className="h-5 w-16 rounded-full" />
+                <Skeleton className="h-5 w-16 rounded-full" />
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
       {/* List Results with Smart Labels */}
-      {view === "list" && totalResults > 0 && (
+      {!loading && view === "list" && totalResults > 0 && (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {results.map((result) => (
             <div key={result.restaurant.id} className="group">
@@ -242,7 +260,7 @@ export default function Search() {
                 </span>
                 <span className="flex items-center gap-1">
                   <Clock className="h-3 w-3" />
-                  {result.restaurant.eta}
+                  {result.restaurant.eta} min
                 </span>
               </div>
             </div>
