@@ -205,7 +205,7 @@ export default function Search() {
       {/* Map View */}
       {view === "map" && totalResults > 0 && (
         <section className="rounded-2xl border border-border bg-card p-4 shadow-soft">
-          <RestaurantMap restaurants={results.map((r) => r.restaurant)} />
+          <RestaurantMap restaurants={results.map((r) => ({ ...r.restaurant, deliveryTime: r.restaurant.eta }))} />
         </section>
       )}
 

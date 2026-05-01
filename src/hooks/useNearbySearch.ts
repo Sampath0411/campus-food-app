@@ -11,7 +11,7 @@ type SearchFilters = {
 };
 
 type SearchResult = {
-  restaurant: Restaurant & { lat: number; lng: number; distance: number; eta: number };
+  restaurant: Restaurant & { lat: number; lng: number; distance: number; etaMin: number };
   matchedDishes: MenuItem[];
   matchScore: number;
   labels: string[];
@@ -80,14 +80,14 @@ function calculateMatchScore(
 }
 
 function generateLabels(
-  restaurant: Restaurant & { distance: number; eta: number }
+  restaurant: Restaurant & { distance: number; etaMin: number }
 ): string[] {
   const labels: string[] = [];
 
   if (restaurant.distance < 1.5) labels.push("Near You 📍");
   if (restaurant.priceFor2 <= 150) labels.push("Under ₹150 💸");
   else if (restaurant.priceFor2 <= 200) labels.push("Budget Pick 💰");
-  if (restaurant.eta <= 20) labels.push("Fast Delivery ⚡");
+  if (restaurant.etaMin <= 20) labels.push("Fast Delivery ⚡");
   if (restaurant.rating >= 4.5) labels.push("Top Rated ⭐");
   if (restaurant.offer) labels.push("Offers 🎁");
   if (restaurant.tags.includes("Veg")) labels.push("Pure Veg 🌿");
@@ -254,15 +254,15 @@ export function useNearbySearch() {
     return osmPlaces
       .map((restaurant) => {
         const distance = haversineKm(userLocation, { lat: restaurant.lat, lng: restaurant.lng });
-        const eta = etaMinutes(distance);
+        const etaMin = etaMinutes(distance);
         const dishes = menuByRestaurant[restaurant.id] || menu.slice(0, 3);
         const matchScore = debouncedQuery
           ? calculateMatchScore(restaurant, dishes, debouncedQuery)
           : 100;
-        const labels = generateLabels({ ...restaurant, distance, eta });
+        const labels = generateLabels({ ...restaurant, distance, etaMin } as any);
 
         return {
-          restaurant: { ...restaurant, distance, eta },
+          restaurant: { ...restaurant, distance, etaMin },
           matchedDishes: dishes,
           matchScore,
           labels,

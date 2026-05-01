@@ -15,24 +15,25 @@ export type Restaurant = {
   img: string;
   tags: string[];
   offer?: string;
+  open24?: boolean;
 };
 
 export const restaurants: Restaurant[] = [
-  { id: "mamas", name: "Mama's Corner", cuisine: "Homestyle • Comfort", rating: 4.6, eta: "18 min", priceFor2: 180, img: foodMac, tags: ["Budget", "Mess-style"], offer: "50% OFF up to ₹100" },
+  { id: "mamas", name: "Mama's Corner", cuisine: "Homestyle • Comfort", rating: 4.6, eta: "18 min", priceFor2: 180, img: foodMac, tags: ["Budget", "Mess-style"], offer: "50% OFF up to ₹100", open24: true },
   { id: "green", name: "Green Leaf Deli", cuisine: "Healthy • Salads • Bowls", rating: 4.4, eta: "22 min", priceFor2: 220, img: foodBowl, tags: ["Healthy", "Veg"], offer: "Free delivery" },
-  { id: "ramen", name: "Sektor Ramen House", cuisine: "Asian • Noodles", rating: 4.7, eta: "28 min", priceFor2: 260, img: foodRamen, tags: ["Trending"], offer: "₹75 OFF above ₹199" },
+  { id: "ramen", name: "Sektor Ramen House", cuisine: "Asian • Noodles", rating: 4.7, eta: "28 min", priceFor2: 260, img: foodRamen, tags: ["Trending"], offer: "₹75 OFF above ₹199", open24: true },
   { id: "smoke", name: "Smokehouse 21", cuisine: "BBQ • Grills", rating: 4.5, eta: "32 min", priceFor2: 320, img: foodBrisket, tags: ["Non-veg"] },
   { id: "mamas2", name: "Hostel Hub Tiffins", cuisine: "Thali • North Indian", rating: 4.3, eta: "15 min", priceFor2: 120, img: foodMac, tags: ["Budget", "Veg"], offer: "Flat ₹40 OFF" },
   { id: "green2", name: "Protein Pantry", cuisine: "Healthy • High-protein", rating: 4.6, eta: "24 min", priceFor2: 280, img: foodBowl, tags: ["Healthy"] },
   { id: "biryani", name: "Biryani Blues", cuisine: "Hyderabadi • Dum", rating: 4.5, eta: "25 min", priceFor2: 240, img: foodMac, tags: ["Non-veg", "Spicy"], offer: "20% OFF" },
   { id: "pizza", name: "Campus Pizza", cuisine: "Italian • Fast Food", rating: 4.2, eta: "20 min", priceFor2: 200, img: foodMac, tags: ["Veg", "Non-veg"], offer: "Buy 1 Get 1" },
   { id: "dosa", name: "Dosa Plaza", cuisine: "South Indian", rating: 4.4, eta: "12 min", priceFor2: 100, img: foodBowl, tags: ["Veg", "Breakfast"], offer: "Free drink" },
-  { id: "chicken", name: "Chicken Republic", cuisine: "Fried Chicken", rating: 4.3, eta: "30 min", priceFor2: 280, img: foodBrisket, tags: ["Non-veg"], offer: null },
-  { id: "chaat", name: "Chaat Corner", cuisine: "Street Food", rating: 4.1, eta: "10 min", priceFor2: 80, img: foodBowl, tags: ["Veg", "Snacks"], offer: null },
+  { id: "chicken", name: "Chicken Republic", cuisine: "Fried Chicken", rating: 4.3, eta: "30 min", priceFor2: 280, img: foodBrisket, tags: ["Non-veg"], offer: null, open24: true },
+  { id: "chaat", name: "Chaat Corner", cuisine: "Street Food", rating: 4.1, eta: "10 min", priceFor2: 80, img: foodBowl, tags: ["Veg", "Snacks"], offer: null, open24: true },
   { id: "rolls", name: "Kathi Roll Company", cuisine: "Rolls • Wraps", rating: 4.0, eta: "18 min", priceFor2: 150, img: foodMac, tags: ["Non-veg", "Veg"], offer: "₹50 OFF" },
   // Andhra/Vizag special
   { id: "andhra1", name: "Rayalaseema Ruchulu", cuisine: "Andhra • Spicy", rating: 4.7, eta: "25 min", priceFor2: 250, img: foodBowl, tags: ["Non-veg", "Spicy", "Andhra"], offer: "15% OFF" },
-  { id: "andhra2", name: "Vizag Beach Biryani", cuisine: "Andhra • Biryani", rating: 4.6, eta: "30 min", priceFor2: 280, img: foodMac, tags: ["Non-veg", "Andhra", "Biryani"], offer: null },
+  { id: "andhra2", name: "Vizag Beach Biryani", cuisine: "Andhra • Biryani", rating: 4.6, eta: "30 min", priceFor2: 280, img: foodMac, tags: ["Non-veg", "Andhra", "Biryani"], offer: null, open24: true },
   { id: "andhra3", name: "Bamboo Chicken Hub", cuisine: "Tribal • Andhra", rating: 4.5, eta: "35 min", priceFor2: 300, img: foodBrisket, tags: ["Non-veg", "Andhra", "Special"], offer: "₹50 OFF" },
   { id: "andhra4", name: "Bongulo Kitchen", cuisine: "Traditional Andhra", rating: 4.4, eta: "28 min", priceFor2: 220, img: foodBowl, tags: ["Veg", "Non-veg", "Andhra"], offer: "Free drink" },
   { id: "andhra5", name: "Gongura Point", cuisine: "Andhra • Veg", rating: 4.3, eta: "20 min", priceFor2: 180, img: foodBowl, tags: ["Veg", "Andhra", "Spicy"], offer: null },

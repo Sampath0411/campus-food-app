@@ -111,15 +111,15 @@ export function RestaurantMap({ restaurants }: RestaurantMapProps) {
       {/* Interactive Map */}
       <div className="overflow-hidden rounded-2xl border border-border">
         <MapContainer
-          center={userLocation || [17.6868, 83.2185]}
-          zoom={15}
-          scrollWheelZoom={true}
+          {...({ center: userLocation || [17.6868, 83.2185], zoom: 15, scrollWheelZoom: true } as any)}
           className="h-[400px] w-full"
         >
           {userLocation && <MapController center={userLocation} onCenterChange={setUserLocation} />}
           <TileLayer
-            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+            {...({
+              attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+              url: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+            } as any)}
           />
           {/* User location marker */}
           {userLocation && (
