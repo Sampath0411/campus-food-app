@@ -4,6 +4,7 @@
 import { restaurants, menu, MenuItem, Restaurant } from "@/data/mock";
 
 const GROQ_API_URL = "https://api.groq.com/openai/v1/chat/completions";
+const GROQ_MODEL = "llama-3.3-70b-versatile"; // Updated from llama-3.1 (decommissioned)
 
 // System prompt for AI food recommendations
 const SYSTEM_PROMPT = `You are QuickBite's AI Food Concierge - a friendly, helpful assistant for college students ordering food.
@@ -71,7 +72,7 @@ export async function getAIRecommendation(
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "llama-3.1-70b-versatile",
+        model: GROQ_MODEL,
         messages: [
           { role: "system", content: SYSTEM_PROMPT },
           { role: "user", content: prompt }
@@ -141,7 +142,7 @@ Return format:
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "llama-3.1-70b-versatile",
+        model: GROQ_MODEL,
         messages: [
           { role: "system", content: "You are a search query parser. Return ONLY valid JSON, no explanations." },
           { role: "user", content: prompt }
@@ -222,7 +223,7 @@ export async function chatWithAI(
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "llama-3.1-70b-versatile",
+        model: GROQ_MODEL,
         messages: [
           { role: "system", content: SYSTEM_PROMPT },
           ...messages.slice(-10)
@@ -268,7 +269,7 @@ Make it appealing to college students, mention taste and value.`;
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "llama-3.1-70b-versatile",
+        model: GROQ_MODEL,
         messages: [{ role: "user", content: prompt }],
         temperature: 0.8,
         max_tokens: 100,
