@@ -11,7 +11,7 @@ type SearchFilters = {
 };
 
 type SearchResult = {
-  restaurant: Restaurant & { lat: number; lng: number; distance: number; eta: number };
+  restaurant: Restaurant & { lat: number; lng: number; distance: number; etaMin: number };
   matchedDishes: MenuItem[];
   matchScore: number;
   labels: string[];
@@ -254,15 +254,15 @@ export function useNearbySearch() {
     return osmPlaces
       .map((restaurant) => {
         const distance = haversineKm(userLocation, { lat: restaurant.lat, lng: restaurant.lng });
-        const eta = etaMinutes(distance);
+        const etaMin = etaMinutes(distance);
         const dishes = menuByRestaurant[restaurant.id] || menu.slice(0, 3);
         const matchScore = debouncedQuery
           ? calculateMatchScore(restaurant, dishes, debouncedQuery)
           : 100;
-        const labels = generateLabels({ ...restaurant, distance, eta });
+        const labels = generateLabels({ ...restaurant, distance, etaMin } as any);
 
         return {
-          restaurant: { ...restaurant, distance, eta },
+          restaurant: { ...restaurant, distance, etaMin },
           matchedDishes: dishes,
           matchScore,
           labels,
