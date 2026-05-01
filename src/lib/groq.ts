@@ -78,11 +78,13 @@ export async function getAIRecommendation(
         ],
         temperature: 0.7,
         max_tokens: 200,
+        stream: false,
       }),
     });
 
     if (!response.ok) {
-      throw new Error(`Groq API error: ${response.status}`);
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(`Groq API error: ${response.status} - ${JSON.stringify(errorData)}`);
     }
 
     const data = await response.json();
@@ -146,11 +148,15 @@ Return format:
         ],
         temperature: 0.1,
         max_tokens: 150,
-        response_format: { type: "json_object" },
+        stream: false,
       }),
     });
 
-    if (!response.ok) throw new Error("AI search failed");
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      console.error("[Smart Search] Groq error:", errorData);
+      throw new Error("AI search failed");
+    }
 
     const data = await response.json();
     const parsed = JSON.parse(data.choices[0]?.message?.content || "{}");
@@ -219,14 +225,19 @@ export async function chatWithAI(
         model: "llama-3.1-70b-versatile",
         messages: [
           { role: "system", content: SYSTEM_PROMPT },
-          ...messages.slice(-10) // Last 10 messages for context
+          ...messages.slice(-10)
         ],
         temperature: 0.7,
         max_tokens: 300,
+        stream: false,
       }),
     });
 
-    if (!response.ok) throw new Error("Chat failed");
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      console.error("[AI Chat] Groq error:", errorData);
+      throw new Error("Chat failed");
+    }
 
     const data = await response.json();
     return data.choices[0]?.message?.content || "I'm here to help! What are you craving?";
@@ -261,6 +272,7 @@ Make it appealing to college students, mention taste and value.`;
         messages: [{ role: "user", content: prompt }],
         temperature: 0.8,
         max_tokens: 100,
+        stream: false,
       }),
     });
 

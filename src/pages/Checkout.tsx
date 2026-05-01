@@ -1,11 +1,11 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { CreditCard, Smartphone, Building, CheckCircle, Loader2, IndianRupee } from "lucide-react";
+import { Smartphone, CheckCircle, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useCart } from "@/context/CartContext";
-import { initiateUPIPayment, openUPIIntent } from "@/lib/payments";
+import { openUPIIntent, simulatePayment, isUPIAvailable } from "@/lib/payments";
 import { useAuth } from "@/hooks/useAuth";
 
 export default function Checkout() {
@@ -14,7 +14,6 @@ export default function Checkout() {
   const { items, total, clearCart } = useCart();
 
   const [loading, setLoading] = useState(false);
-  const [paymentMethod, setPaymentMethod] = useState<"upi" | "card" | "netbanking">("upi");
   const [formData, setFormData] = useState({
     name: user?.name || "",
     phone: "",
@@ -37,30 +36,37 @@ export default function Checkout() {
     setLoading(true);
 
     try {
-      // For demo: use UPI intent or Razorpay
-      const paymentResult = await initiateUPIPayment({
-        amount: grandTotal * 100, // Convert to paise
-        name: "QuickBite Order",
-        description: `Food order for ${formData.name}`,
-        prefill: {
-          name: formData.name,
-          contact: formData.phone,
-        },
-      });
-
-      if (paymentResult.success) {
-        // Save order to Supabase
-        // TODO: Add order saving logic here
-
-        clearCart();
-        navigate("/order-success", {
-          state: {
-            orderId: paymentResult.razorpay_payment_id,
-            amount: grandTotal,
-          },
+      // On mobile: open UPI app directly
+      // On desktop: simulate payment (demo mode)
+      if (isUPIAvailable()) {
+        openUPIIntent({
+          upiId: "quickbite@ybl",
+          amount: grandTotal,
+          name: "QuickBite",
+          note: `Order from ${formData.name}`,
         });
+        // After UPI payment, user comes back - mark as success
+        setTimeout(() => {
+          clearCart();
+          navigate("/order-success", {
+            state: { orderId: `UPI${Date.now()}`, amount: grandTotal },
+          });
+        }, 3000);
       } else {
-        alert(paymentResult.error || "Payment failed");
+        // Desktop demo mode
+        const result = await simulatePayment({
+          amount: grandTotal,
+          name: formData.name,
+        });
+
+        if (result.success) {
+          clearCart();
+          navigate("/order-success", {
+            state: { orderId: result.transactionId, amount: grandTotal },
+          });
+        } else {
+          alert(result.error || "Payment failed");
+        }
       }
     } catch (err: any) {
       console.error("[Checkout] Payment error:", err);
@@ -68,16 +74,6 @@ export default function Checkout() {
     } finally {
       setLoading(false);
     }
-  };
-
-  const handleDirectUPI = () => {
-    // Direct UPI intent for mobile users
-    openUPIIntent({
-      upiId: "quickbite@ybl", // Your merchant UPI ID
-      amount: grandTotal,
-      name: "QuickBite",
-      note: `Order from ${formData.name}`,
-    });
   };
 
   if (items.length === 0) {
@@ -189,59 +185,18 @@ export default function Checkout() {
         </div>
       </div>
 
-      {/* Payment Method */}
+      {/* Payment Info */}
       <div className="rounded-2xl border border-border bg-card p-4">
         <h2 className="mb-4 font-semibold">Payment Method</h2>
-        <div className="grid gap-3 sm:grid-cols-3">
-          <button
-            onClick={() => setPaymentMethod("upi")}
-            className={`flex flex-col items-center gap-2 rounded-xl border p-4 transition-all ${
-              paymentMethod === "upi"
-                ? "border-primary bg-primary/5"
-                : "border-border hover:border-primary"
-            }`}
-          >
-            <Smartphone className="h-6 w-6" />
-            <span className="text-sm font-medium">UPI</span>
-            <span className="text-xs text-muted-foreground">GPay, PhonePe, Paytm</span>
-          </button>
-          <button
-            onClick={() => setPaymentMethod("card")}
-            className={`flex flex-col items-center gap-2 rounded-xl border p-4 transition-all ${
-              paymentMethod === "card"
-                ? "border-primary bg-primary/5"
-                : "border-border hover:border-primary"
-            }`}
-          >
-            <CreditCard className="h-6 w-6" />
-            <span className="text-sm font-medium">Card</span>
-            <span className="text-xs text-muted-foreground">Debit/Credit</span>
-          </button>
-          <button
-            onClick={() => setPaymentMethod("netbanking")}
-            className={`flex flex-col items-center gap-2 rounded-xl border p-4 transition-all ${
-              paymentMethod === "netbanking"
-                ? "border-primary bg-primary/5"
-                : "border-border hover:border-primary"
-            }`}
-          >
-            <Building className="h-6 w-6" />
-            <span className="text-sm font-medium">Net Banking</span>
-            <span className="text-xs text-muted-foreground">All Banks</span>
-          </button>
+        <div className="flex items-center gap-3 text-sm text-muted-foreground">
+          <Smartphone className="h-5 w-5" />
+          <span>Pay via UPI (GPay, PhonePe, Paytm, BHIM)</span>
         </div>
-
-        {paymentMethod === "upi" && (
-          <div className="mt-4 flex items-center justify-between rounded-lg bg-muted p-3">
-            <div className="flex items-center gap-2">
-              <IndianRupee className="h-4 w-4 text-muted-foreground" />
-              <span className="text-sm">Pay via UPI App</span>
-            </div>
-            <Button variant="outline" size="sm" onClick={handleDirectUPI} className="rounded-full">
-              Open UPI App
-            </Button>
-          </div>
-        )}
+        <p className="mt-2 text-xs text-muted-foreground">
+          {isUPIAvailable()
+            ? "👍 You're on mobile - UPI app will open automatically"
+            : "💻 On desktop? Payment will be simulated for demo"}
+        </p>
       </div>
 
       {/* Pay Button */}
