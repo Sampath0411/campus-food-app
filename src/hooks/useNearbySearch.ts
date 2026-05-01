@@ -80,14 +80,14 @@ function calculateMatchScore(
 }
 
 function generateLabels(
-  restaurant: Restaurant & { distance: number; eta: number }
+  restaurant: Restaurant & { distance: number; etaMin: number }
 ): string[] {
   const labels: string[] = [];
 
   if (restaurant.distance < 1.5) labels.push("Near You 📍");
   if (restaurant.priceFor2 <= 150) labels.push("Under ₹150 💸");
   else if (restaurant.priceFor2 <= 200) labels.push("Budget Pick 💰");
-  if (restaurant.eta <= 20) labels.push("Fast Delivery ⚡");
+  if (restaurant.etaMin <= 20) labels.push("Fast Delivery ⚡");
   if (restaurant.rating >= 4.5) labels.push("Top Rated ⭐");
   if (restaurant.offer) labels.push("Offers 🎁");
   if (restaurant.tags.includes("Veg")) labels.push("Pure Veg 🌿");
