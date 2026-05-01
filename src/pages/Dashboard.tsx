@@ -1,44 +1,85 @@
 import { useState, useEffect } from "react";
-import { Sparkles, ArrowRight, Flame, Leaf, Star, MapPin } from "lucide-react";
+import { Sparkles, ArrowRight, Flame, Leaf, Star, Moon } from "lucide-react";
 import { Slider } from "@/components/ui/slider";
 import { Button } from "@/components/ui/button";
 import { aiPicks, categories, restaurants } from "@/data/mock";
 import { RestaurantCard } from "@/components/RestaurantCard";
+import { RestaurantCardSkeleton } from "@/components/RestaurantCardSkeleton";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
+import { useI18n } from "@/lib/i18n";
 
 const filterChips = ["Filter", "Sort by", "Fast Delivery", "Rating 4.0+", "Pure Veg", "Offers", "₹100–300"];
 
 export default function Dashboard() {
   const { user } = useAuth();
+  const { t } = useI18n();
   const [budget, setBudget] = useState([200]);
   const [active, setActive] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
   const userName = user?.name?.split(' ')[0] || 'there';
 
+  // Skeleton on mount
+  useEffect(() => {
+    const t = setTimeout(() => setLoading(false), 600);
+    return () => clearTimeout(t);
+  }, []);
+
+  // Late-night detection (>= 22:00 or < 5:00)
+  const hour = new Date().getHours();
+  const isLateNight = hour >= 22 || hour < 5;
+  const lateNightSpots = restaurants.filter((r) => r.open24);
+
+  const greeting =
+    hour < 12 ? t("dash.greetingMorning") : hour < 17 ? t("dash.greetingAfternoon") : t("dash.greetingEvening");
+
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 animate-fade-in">
       {/* Greeting */}
       <section className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <p className="text-sm text-muted-foreground">Good evening</p>
+          <p className="text-sm text-muted-foreground">{greeting}</p>
           <h1 className="font-display text-3xl font-bold md:text-4xl">
             {userName} <span className="inline-block animate-soft-pulse">👋</span>
           </h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            What's the move tonight? Your AI picked 6 meals under ₹150.
-          </p>
+          <p className="mt-1 text-sm text-muted-foreground">{t("dash.tagline")}</p>
         </div>
         <Button className="rounded-full bg-gradient-primary text-primary-foreground shadow-pop">
-          <Sparkles className="mr-1.5 h-4 w-4" /> Reorder usual
+          <Sparkles className="mr-1.5 h-4 w-4" /> {t("dash.reorder")}
         </Button>
       </section>
+
+      {/* Late-night banner */}
+      {isLateNight && (
+        <section className="overflow-hidden rounded-2xl border border-border bg-foreground p-5 text-background shadow-card animate-fade-in">
+          <div className="flex items-start gap-4">
+            <div className="grid h-12 w-12 shrink-0 place-items-center rounded-full bg-highlight/20 text-highlight">
+              <Moon className="h-6 w-6" />
+            </div>
+            <div className="flex-1">
+              <h2 className="font-display text-lg font-bold">{t("dash.lateNight")}</h2>
+              <p className="mt-1 text-sm opacity-80">{t("dash.lateNightDesc")}</p>
+              <div className="mt-3 -mx-1 flex gap-2 overflow-x-auto px-1 hide-scrollbar">
+                {lateNightSpots.slice(0, 5).map((r) => (
+                  <span
+                    key={r.id}
+                    className="shrink-0 rounded-full border border-background/20 bg-background/10 px-3 py-1 text-xs font-medium"
+                  >
+                    {r.name} • {r.eta}
+                  </span>
+                ))}
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* AI carousel */}
       <section>
         <div className="mb-3 flex items-center justify-between">
-          <h2 className="font-display text-lg font-semibold">AI Picks for you</h2>
+          <h2 className="font-display text-lg font-semibold">{t("dash.aiPicks")}</h2>
           <button className="flex items-center gap-1 text-xs font-semibold text-primary">
-            See all <ArrowRight className="h-3.5 w-3.5" />
+            {t("dash.seeAll")} <ArrowRight className="h-3.5 w-3.5" />
           </button>
         </div>
         <div className="-mx-4 flex gap-3 overflow-x-auto px-4 pb-2 hide-scrollbar md:mx-0 md:px-0">
@@ -46,7 +87,7 @@ export default function Dashboard() {
             <article
               key={i}
               className={cn(
-                "min-w-[260px] shrink-0 rounded-2xl p-4 shadow-card md:min-w-[280px]",
+                "min-w-[260px] shrink-0 rounded-2xl p-4 shadow-card transition-transform hover:-translate-y-1 md:min-w-[280px]",
                 p.tone === "primary" && "bg-gradient-primary text-primary-foreground",
                 p.tone === "accent" && "bg-gradient-accent text-accent-foreground",
                 p.tone === "dark" && "bg-foreground text-background",
@@ -65,7 +106,7 @@ export default function Dashboard() {
 
       {/* Categories */}
       <section>
-        <h2 className="mb-3 font-display text-lg font-semibold">What's on your mind?</h2>
+        <h2 className="mb-3 font-display text-lg font-semibold">{t("dash.categories")}</h2>
         <div className="-mx-4 flex gap-3 overflow-x-auto px-4 pb-1 hide-scrollbar md:mx-0 md:flex-wrap md:px-0">
           {categories.map((c) => (
             <button
@@ -98,8 +139,8 @@ export default function Dashboard() {
         <div className="mt-4 grid gap-4 md:grid-cols-3">
           <div className="md:col-span-2">
             <div className="mb-2 flex items-center justify-between text-xs">
-              <span className="font-semibold">Budget</span>
-              <span className="text-primary">Up to ₹{budget[0]}</span>
+              <span className="font-semibold">{t("dash.budget")}</span>
+              <span className="text-primary">{t("dash.upTo")} ₹{budget[0]}</span>
             </div>
             <Slider value={budget} onValueChange={setBudget} max={500} min={50} step={10} />
           </div>
@@ -120,12 +161,12 @@ export default function Dashboard() {
       {/* Restaurant grid */}
       <section>
         <div className="mb-4 flex items-center justify-between">
-          <h2 className="font-display text-xl font-semibold">{restaurants.length} restaurants near you</h2>
+          <h2 className="font-display text-xl font-semibold">{restaurants.length} {t("dash.nearYou")}</h2>
         </div>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {restaurants.map((r) => (
-            <RestaurantCard key={r.id} r={r} />
-          ))}
+          {loading
+            ? Array.from({ length: 6 }).map((_, i) => <RestaurantCardSkeleton key={i} />)
+            : restaurants.map((r) => <RestaurantCard key={r.id} r={r} />)}
         </div>
       </section>
     </div>
