@@ -1,4 +1,7 @@
-# 🍽️ Campus Grub Hub
+<div align="center">
+  <img src="./public/quickbite-logo.png" alt="Campus Grub Hub Logo" width="200" />
+  <h1>🍽️ Campus Grub Hub</h1>
+</div>
 
 > **Your campus food ordering platform** — Order from campus restaurants, join group orders, track deliveries in real-time, and schedule meals ahead. Built for students, by students.
 
