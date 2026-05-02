@@ -1,5 +1,5 @@
-// UPI Payment - Direct UPI Intent (No Razorpay)
-// Works on mobile: Opens GPay, PhonePe, Paytm, BHIM apps directly
+// Real UPI Payments — direct UPI intent on mobile, scannable UPI QR on desktop.
+// No third-party gateway, no Razorpay. Works with GPay, PhonePe, Paytm, BHIM, etc.
 
 export interface PaymentResult {
   success: boolean;
@@ -7,35 +7,42 @@ export interface PaymentResult {
   error?: string;
 }
 
-// Direct UPI Intent for mobile
-export function openUPIIntent(options: {
+export interface UPIPaymentOptions {
   upiId: string;
   amount: number;
   name: string;
   note?: string;
-}): void {
-  const upiLink = `upi://pay?pa=${options.upiId}&pn=${encodeURIComponent(options.name)}&am=${options.amount}&cu=INR${options.note ? `&tn=${encodeURIComponent(options.note)}` : ""}`;
-  window.location.href = upiLink;
+  txnRef?: string;
 }
 
-// Check if UPI apps are available (Android only)
+// Build a standards-compliant UPI deep link (NPCI spec).
+// Works as a QR payload AND as an `upi://` deep link.
+export function buildUPILink(opts: UPIPaymentOptions): string {
+  const params = new URLSearchParams({
+    pa: opts.upiId,
+    pn: opts.name,
+    am: opts.amount.toFixed(2),
+    cu: "INR",
+  });
+  if (opts.note) params.set("tn", opts.note);
+  if (opts.txnRef) params.set("tr", opts.txnRef);
+  return `upi://pay?${params.toString()}`;
+}
+
+// Open the UPI intent on the user's device. Mobile: launches the user's
+// UPI app picker. Desktop browsers will typically ignore this scheme — the
+// caller should fall back to showing the QR via `buildUPILink`.
+export function openUPIIntent(options: UPIPaymentOptions): void {
+  const link = buildUPILink(options);
+  window.location.href = link;
+}
+
+export function isMobile(): boolean {
+  if (typeof navigator === "undefined") return false;
+  return /android|iphone|ipad|ipod|mobile/i.test(navigator.userAgent);
+}
+
+// Backward-compat alias used elsewhere in the codebase.
 export function isUPIAvailable(): boolean {
-  const ua = navigator.userAgent.toLowerCase();
-  return ua.includes("android") && (ua.includes("chrome") || ua.includes("firefox"));
-}
-
-// Simulate payment for demo (no real payment gateway)
-export async function simulatePayment(options: {
-  amount: number;
-  name: string;
-}): Promise<PaymentResult> {
-  // Simulate processing delay
-  await new Promise(resolve => setTimeout(resolve, 2000));
-
-  // For demo: always succeed
-  // In production, integrate with actual payment gateway
-  return {
-    success: true,
-    transactionId: `TXN${Date.now()}`,
-  };
+  return isMobile();
 }
