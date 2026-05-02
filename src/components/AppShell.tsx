@@ -173,8 +173,8 @@ export function AppShell({ children }: { children: ReactNode }) {
             <p className="mt-2 font-display text-base font-bold leading-tight">
               "Mac & Cheese + Cola — under your ₹200 budget."
             </p>
-            <Button size="sm" variant="secondary" className="mt-3 rounded-full">
-              Show pick
+            <Button size="sm" variant="secondary" className="mt-3 rounded-full" onClick={() => navigate("/meal-planner")}>
+              Plan my week
             </Button>
           </div>
         </aside>
