@@ -26,6 +26,7 @@ const navItems = [
   { to: "/recent-orders", label: "Recent Orders", icon: ScrollText },
   { to: "/orders", label: "Track Order", icon: ScrollText },
   { to: "/group", label: "Group Orders", icon: Users },
+  { to: "/meal-planner", label: "AI Meal Planner", icon: Sparkles },
   { to: "/scheduled", label: "Scheduled", icon: CalendarClock },
 ];
 
