@@ -119,7 +119,7 @@ export default function GroupOrder() {
       <header className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <p className="text-sm text-muted-foreground">Group order · {group.code}</p>
-          <h1 className="font-display text-2xl font-bold md:text-3xl">{group.title} 🍜</h1>
+          <h1 className="font-display text-2xl font-bold md:text-3xl flex items-center gap-2">{group.title} <Users className="h-6 w-6 text-primary" /></h1>
           <p className="mt-1 flex items-center gap-1.5 text-sm text-muted-foreground">
             <Users className="h-3.5 w-3.5" /> {group.members.length} hostelers · split {group.splitMode === "even" ? "evenly" : "by item"}
             {group.locked && <span className="ml-2 inline-flex items-center gap-1 rounded-full bg-muted px-2 py-0.5 text-xs"><Lock className="h-3 w-3" /> Locked</span>}
@@ -347,7 +347,7 @@ function EmptyState({
     <div className="space-y-6">
       <header>
         <p className="text-sm text-muted-foreground">Group order</p>
-        <h1 className="font-display text-2xl font-bold md:text-3xl">Order together, split the bill 🍜</h1>
+        <h1 className="font-display text-2xl font-bold md:text-3xl flex items-center gap-2">Order together, split the bill <Users className="h-6 w-6 text-primary" /></h1>
         <p className="mt-1 text-sm text-muted-foreground">Start a group or join a friend's invite — bills split automatically.</p>
       </header>
       <div className="grid gap-5 md:grid-cols-2">

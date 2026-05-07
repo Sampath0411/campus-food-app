@@ -12,7 +12,7 @@ export default function Scheduled() {
       <header className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <p className="text-sm text-muted-foreground">Scheduled orders</p>
-          <h1 className="font-display text-2xl font-bold md:text-3xl">Plan your week of meals 📅</h1>
+          <h1 className="font-display text-2xl font-bold md:text-3xl flex items-center gap-2">Plan your week of meals <CalendarClock className="h-6 w-6 text-primary" /></h1>
         </div>
         <Button className="rounded-full bg-gradient-primary shadow-pop">
           <Plus className="mr-1.5 h-4 w-4" /> New schedule
