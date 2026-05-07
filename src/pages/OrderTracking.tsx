@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { Check, ChefHat, Bike, PackageCheck, Phone, MessageCircle, MapPin, Clock, Radio, RotateCcw, Navigation } from "lucide-react";
+import { Check, ChefHat, Bike, PackageCheck, Phone, MessageCircle, MapPin, Clock, Radio, RotateCcw, Navigation, Printer } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useOrderProgress } from "@/hooks/useOrderProgress";
@@ -56,9 +56,14 @@ export default function OrderTracking() {
               )}
             </p>
           </div>
-          <Button variant="outline" size="sm" className="rounded-full" onClick={reset}>
-            <RotateCcw className="mr-1.5 h-3.5 w-3.5" /> Restart demo
-          </Button>
+          <div className="flex gap-2">
+            <Button variant="outline" size="sm" className="rounded-full" onClick={() => printBill(order)}>
+              <Printer className="mr-1.5 h-3.5 w-3.5" /> Print bill
+            </Button>
+            <Button variant="outline" size="sm" className="rounded-full" onClick={reset}>
+              <RotateCcw className="mr-1.5 h-3.5 w-3.5" /> Restart demo
+            </Button>
+          </div>
         </header>
 
         {/* Step tracker */}
