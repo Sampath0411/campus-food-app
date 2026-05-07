@@ -15,7 +15,7 @@ export default function Profile() {
 
   const [dark, setDark] = useState(() => {
     const saved = localStorage.getItem("bb:dark-mode");
-    return saved ? JSON.parse(saved) : false;
+    return saved === null ? true : JSON.parse(saved);
   });
 
   useEffect(() => {

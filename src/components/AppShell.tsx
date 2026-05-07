@@ -43,9 +43,9 @@ export function AppShell({ children }: { children: ReactNode }) {
   const navigate = useNavigate();
   const geo = useGeolocation();
   const [dark, setDark] = useState(() => {
-    // Persist dark mode preference
+    // Default to dark mode unless user explicitly chose light
     const saved = localStorage.getItem("bb:dark-mode");
-    return saved ? JSON.parse(saved) : false;
+    return saved === null ? true : JSON.parse(saved);
   });
 
   // Persist dark mode on toggle

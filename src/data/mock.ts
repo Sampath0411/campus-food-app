@@ -1,3 +1,4 @@
+import { Flame, Dumbbell, Moon, UtensilsCrossed, Wallet, Pizza, Salad, Beef, IceCream, CupSoda, type LucideIcon } from "lucide-react";
 import foodMac from "@/assets/food-mac.jpg";
 import foodBowl from "@/assets/food-bowl.jpg";
 import foodBrisket from "@/assets/food-brisket.jpg";
@@ -31,7 +32,6 @@ export const restaurants: Restaurant[] = [
   { id: "chicken", name: "Chicken Republic", cuisine: "Fried Chicken", rating: 4.3, eta: "30 min", priceFor2: 280, img: foodBrisket, tags: ["Non-veg"], offer: null, open24: true },
   { id: "chaat", name: "Chaat Corner", cuisine: "Street Food", rating: 4.1, eta: "10 min", priceFor2: 80, img: foodBowl, tags: ["Veg", "Snacks"], offer: null, open24: true },
   { id: "rolls", name: "Kathi Roll Company", cuisine: "Rolls • Wraps", rating: 4.0, eta: "18 min", priceFor2: 150, img: foodMac, tags: ["Non-veg", "Veg"], offer: "₹50 OFF" },
-  // Andhra/Vizag special
   { id: "andhra1", name: "Rayalaseema Ruchulu", cuisine: "Andhra • Spicy", rating: 4.7, eta: "25 min", priceFor2: 250, img: foodBowl, tags: ["Non-veg", "Spicy", "Andhra"], offer: "15% OFF" },
   { id: "andhra2", name: "Vizag Beach Biryani", cuisine: "Andhra • Biryani", rating: 4.6, eta: "30 min", priceFor2: 280, img: foodMac, tags: ["Non-veg", "Andhra", "Biryani"], offer: null, open24: true },
   { id: "andhra3", name: "Bamboo Chicken Hub", cuisine: "Tribal • Andhra", rating: 4.5, eta: "35 min", priceFor2: 300, img: foodBrisket, tags: ["Non-veg", "Andhra", "Special"], offer: "₹50 OFF" },
@@ -60,7 +60,6 @@ export const menu: MenuItem[] = [
   { id: "m4", name: "Smoked Brisket Plate", desc: "House-rub brisket, slaw, cornbread", price: 289, veg: false, img: foodBrisket, category: "Mains" },
   { id: "m5", name: "Paneer Tikka Bowl", desc: "Smoky paneer, jeera rice, mint chutney", price: 139, veg: true, img: foodBowl, category: "Bowls" },
   { id: "m6", name: "Spicy Chicken Ramen", desc: "Chili oil, corn, soft egg", price: 199, veg: false, img: foodRamen, category: "Bowls" },
-  // Andhra/Vizag dishes
   { id: "a1", name: "Gongura Mutton", desc: "Tender mutton cooked with sorrel leaves, Andhra style", price: 299, veg: false, bestseller: true, img: foodBrisket, category: "Andhra Specials" },
   { id: "a2", name: "Bamboo Chicken", desc: "Marinated chicken cooked in bamboo shoot (Araaku Valley special)", price: 349, veg: false, bestseller: true, img: foodBrisket, category: "Andhra Specials" },
   { id: "a3", name: "Bongulo Chicken Curry", desc: "Traditional village-style chicken curry with country spices", price: 279, veg: false, img: foodBrisket, category: "Andhra Specials" },
@@ -77,19 +76,30 @@ export const menu: MenuItem[] = [
   { id: "a14", name: "Ariselu", desc: "Traditional Andhra sweet with rice flour, jaggery", price: 89, veg: true, img: foodBowl, category: "Desserts" },
 ];
 
-export const aiPicks = [
-  { title: "Best under ₹150 near you", subtitle: "AI matched 6 meals to your budget", emoji: "🔥", tone: "primary" as const },
-  { title: "High-protein post-gym", subtitle: "≥30g protein, ready in 20 min", emoji: "💪", tone: "accent" as const },
-  { title: "Late-night cravings", subtitle: "Open now, delivers to Block C", emoji: "🌙", tone: "dark" as const },
-  { title: "Group friendly thalis", subtitle: "Split easy with 4 friends", emoji: "🍽️", tone: "primary" as const },
+export type AIPick = {
+  title: string;
+  subtitle: string;
+  icon: LucideIcon;
+  iconColor: string;
+  tone: "primary" | "accent" | "dark";
+};
+
+export const aiPicks: AIPick[] = [
+  { title: "Best under ₹150 near you", subtitle: "AI matched 6 meals to your budget", icon: Flame, iconColor: "text-orange-400", tone: "primary" },
+  { title: "High-protein post-gym", subtitle: "≥30g protein, ready in 20 min", icon: Dumbbell, iconColor: "text-emerald-400", tone: "accent" },
+  { title: "Late-night cravings", subtitle: "Open now, delivers to Block C", icon: Moon, iconColor: "text-yellow-300", tone: "dark" },
+  { title: "Group friendly thalis", subtitle: "Split easy with 4 friends", icon: UtensilsCrossed, iconColor: "text-amber-300", tone: "primary" },
 ];
 
-export const categories = [
-  { name: "Budget Eats", emoji: "💸" },
-  { name: "Fast Food", emoji: "🍔" },
-  { name: "Healthy", emoji: "🥗" },
-  { name: "Biryani", emoji: "🍛" },
-  { name: "Desserts", emoji: "🍰" },
-  { name: "Beverages", emoji: "🥤" },
-  { name: "Late Night", emoji: "🌙" },
+export type Category = { name: string; icon: LucideIcon; color: string };
+
+export const categories: Category[] = [
+  { name: "Budget Eats", icon: Wallet, color: "text-emerald-500" },
+  { name: "Fast Food", icon: Pizza, color: "text-orange-500" },
+  { name: "Healthy", icon: Salad, color: "text-green-500" },
+  { name: "Biryani", icon: UtensilsCrossed, color: "text-amber-500" },
+  { name: "Desserts", icon: IceCream, color: "text-pink-400" },
+  { name: "Beverages", icon: CupSoda, color: "text-sky-400" },
+  { name: "Late Night", icon: Moon, color: "text-indigo-400" },
+  { name: "Grills", icon: Beef, color: "text-red-500" },
 ];
