@@ -46,7 +46,7 @@ export default function OrderTracking() {
                 <Radio className="h-3 w-3 animate-soft-pulse" /> Live
               </span>
             </p>
-            <h1 className="font-display text-2xl font-bold md:text-3xl">{order.restaurant} is on it 🍳</h1>
+            <h1 className="font-display text-2xl font-bold md:text-3xl flex items-center gap-2">{order.restaurant} is on it <ChefHat className="h-6 w-6 text-orange-500" /></h1>
             <p className="mt-1 flex items-center gap-1.5 text-sm text-muted-foreground">
               <Clock className="h-3.5 w-3.5" />
               {progress.stage === "delivered" ? (

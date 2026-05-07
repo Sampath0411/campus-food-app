@@ -39,8 +39,8 @@ export default function Dashboard() {
       <section className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <p className="text-sm text-muted-foreground">{greeting}</p>
-          <h1 className="font-display text-3xl font-bold md:text-4xl">
-            {userName} <span className="inline-block animate-soft-pulse">👋</span>
+          <h1 className="font-display text-3xl font-bold md:text-4xl flex items-center gap-2">
+            {userName} <Sparkles className="h-7 w-7 text-yellow-400 animate-soft-pulse" />
           </h1>
           <p className="mt-1 text-sm text-muted-foreground">{t("dash.tagline")}</p>
         </div>
@@ -83,24 +83,29 @@ export default function Dashboard() {
           </button>
         </div>
         <div className="-mx-4 flex gap-3 overflow-x-auto px-4 pb-2 hide-scrollbar md:mx-0 md:px-0">
-          {aiPicks.map((p, i) => (
-            <article
-              key={i}
-              className={cn(
-                "min-w-[260px] shrink-0 rounded-2xl p-4 shadow-card transition-transform hover:-translate-y-1 md:min-w-[280px]",
-                p.tone === "primary" && "bg-gradient-primary text-primary-foreground",
-                p.tone === "accent" && "bg-gradient-accent text-accent-foreground",
-                p.tone === "dark" && "bg-foreground text-background",
-              )}
-            >
-              <div className="text-2xl">{p.emoji}</div>
-              <h3 className="mt-2 font-display text-base font-bold leading-tight">{p.title}</h3>
-              <p className="mt-1 text-xs opacity-90">{p.subtitle}</p>
-              <Button size="sm" variant="secondary" className="mt-3 h-8 rounded-full text-xs">
-                Show meals
-              </Button>
-            </article>
-          ))}
+          {aiPicks.map((p, i) => {
+            const Icon = p.icon;
+            return (
+              <article
+                key={i}
+                className={cn(
+                  "min-w-[260px] shrink-0 rounded-2xl p-4 shadow-card transition-transform hover:-translate-y-1 md:min-w-[280px]",
+                  p.tone === "primary" && "bg-gradient-primary text-primary-foreground",
+                  p.tone === "accent" && "bg-gradient-accent text-accent-foreground",
+                  p.tone === "dark" && "bg-foreground text-background",
+                )}
+              >
+                <div className="grid h-10 w-10 place-items-center rounded-full bg-background/15 backdrop-blur">
+                  <Icon className={cn("h-5 w-5", p.iconColor)} />
+                </div>
+                <h3 className="mt-3 font-display text-base font-bold leading-tight">{p.title}</h3>
+                <p className="mt-1 text-xs opacity-90">{p.subtitle}</p>
+                <Button size="sm" variant="secondary" className="mt-3 h-8 rounded-full text-xs">
+                  Show meals
+                </Button>
+              </article>
+            );
+          })}
         </div>
       </section>
 
@@ -108,19 +113,22 @@ export default function Dashboard() {
       <section>
         <h2 className="mb-3 font-display text-lg font-semibold">{t("dash.categories")}</h2>
         <div className="-mx-4 flex gap-3 overflow-x-auto px-4 pb-1 hide-scrollbar md:mx-0 md:flex-wrap md:px-0">
-          {categories.map((c) => (
-            <button
-              key={c.name}
-              onClick={() => setActive(active === c.name ? null : c.name)}
-              className={cn(
-                "flex shrink-0 flex-col items-center gap-1.5 rounded-2xl border bg-card px-4 py-3 transition-all hover:-translate-y-0.5 hover:shadow-card",
-                active === c.name ? "border-primary ring-2 ring-primary/30" : "border-border",
-              )}
-            >
-              <span className="text-2xl">{c.emoji}</span>
-              <span className="text-xs font-semibold">{c.name}</span>
-            </button>
-          ))}
+          {categories.map((c) => {
+            const Icon = c.icon;
+            return (
+              <button
+                key={c.name}
+                onClick={() => setActive(active === c.name ? null : c.name)}
+                className={cn(
+                  "flex shrink-0 flex-col items-center gap-1.5 rounded-2xl border bg-card px-4 py-3 transition-all hover:-translate-y-0.5 hover:shadow-card",
+                  active === c.name ? "border-primary ring-2 ring-primary/30" : "border-border",
+                )}
+              >
+                <Icon className={cn("h-6 w-6", c.color)} />
+                <span className="text-xs font-semibold">{c.name}</span>
+              </button>
+            );
+          })}
         </div>
       </section>
 
