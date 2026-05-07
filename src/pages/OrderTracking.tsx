@@ -25,6 +25,38 @@ function fmtDuration(s: number) {
   return m ? `${m}m ${sec.toString().padStart(2, "0")}s` : `${sec}s`;
 }
 
+function printBill(order: any) {
+  const w = window.open("", "_blank", "width=420,height=640");
+  if (!w) return;
+  const rows = order.items.map((it: any) =>
+    `<tr><td>${it.qty} × ${it.name}</td><td style="text-align:right">₹${it.price * it.qty}</td></tr>`).join("");
+  w.document.write(`<!doctype html><html><head><title>QuickBite Bill ${order.id}</title>
+    <style>
+      body{font-family:ui-monospace,Menlo,monospace;color:#111;padding:24px;max-width:360px;margin:0 auto;}
+      h1{font-size:18px;margin:0 0 4px;text-align:center;letter-spacing:.08em}
+      .muted{color:#666;font-size:11px;text-align:center;margin-bottom:16px}
+      table{width:100%;border-collapse:collapse;font-size:13px}
+      td{padding:4px 0;border-bottom:1px dashed #ddd}
+      tfoot td{border:0;padding-top:8px;font-weight:700;font-size:15px}
+      .row{display:flex;justify-content:space-between;font-size:12px;margin:2px 0}
+      .center{text-align:center;font-size:11px;color:#666;margin-top:18px}
+    </style></head><body>
+    <h1>QUICKBITE</h1>
+    <div class="muted">Tax invoice · ${new Date().toLocaleString()}</div>
+    <div class="row"><span>Order #</span><b>${order.id}</b></div>
+    <div class="row"><span>Restaurant</span><span>${order.restaurant}</span></div>
+    <div class="row"><span>Rider</span><span>${order.rider?.name ?? "—"}</span></div>
+    <div class="row"><span>Payment</span><span>${order.payment}</span></div>
+    <hr/>
+    <table><tbody>${rows}</tbody>
+      <tfoot><tr><td>TOTAL</td><td style="text-align:right">₹${order.total}</td></tr></tfoot>
+    </table>
+    <div class="center">Thank you · Track at quickbite.app/orders</div>
+    <script>window.onload=()=>setTimeout(()=>window.print(),200)</script>
+    </body></html>`);
+  w.document.close();
+}
+
 export default function OrderTracking() {
   const { order, progress, reset } = useOrderProgress();
   const geo = useGeolocation();
