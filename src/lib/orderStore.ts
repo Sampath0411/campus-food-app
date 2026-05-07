@@ -48,6 +48,13 @@ export const orderStore = {
     localStorage.setItem(KEY, JSON.stringify(o));
     return o;
   },
+  set(partial: Partial<ActiveOrder>): ActiveOrder {
+    const base = defaultOrder();
+    const o: ActiveOrder = { ...base, ...partial, startedAt: Date.now() };
+    localStorage.setItem(KEY, JSON.stringify(o));
+    window.dispatchEvent(new Event("bb:order-reset"));
+    return o;
+  },
   reset() {
     const o = defaultOrder();
     localStorage.setItem(KEY, JSON.stringify(o));

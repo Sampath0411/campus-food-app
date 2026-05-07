@@ -7,6 +7,28 @@ import { useCart } from "@/context/CartContext";
 import { cn } from "@/lib/utils";
 import { addToOrderHistory } from "@/pages/RecentOrders";
 import { restaurants } from "@/data/mock";
+import { orderStore } from "@/lib/orderStore";
+import { addSpend } from "@/lib/budget";
+
+function placeOrderToStore(lines: any[], total: number, payMethod: string, restaurantName: string) {
+  const id = "ORD-" + Math.floor(100000 + Math.random() * 899999);
+  orderStore.set({
+    id,
+    restaurant: restaurantName,
+    items: lines.map((l) => ({ name: l.item.name, price: l.item.price, qty: l.qty })),
+    total,
+    payment: payMethod.toUpperCase(),
+  });
+  addSpend(total, `Order ${id}`);
+  addToOrderHistory({
+    id,
+    restaurantId: "mamas",
+    restaurantName,
+    items: lines.map((l) => ({ name: l.item.name, price: l.item.price, qty: l.qty })),
+    total,
+  });
+  return id;
+}
 
 const methods = [
   { id: "upi",    name: "UPI",            sub: "GPay · PhonePe · Paytm", icon: Smartphone },
