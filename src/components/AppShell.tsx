@@ -126,16 +126,13 @@ export function AppShell({ children }: { children: ReactNode }) {
             </Button>
             <button
               onClick={() => navigate("/profile")}
-              className="grid h-9 w-9 place-items-center rounded-full bg-gradient-accent text-sm font-semibold text-accent-foreground"
+              className="grid h-9 w-9 place-items-center rounded-full bg-gradient-accent text-base font-semibold text-accent-foreground"
               title="Profile"
             >
               {(() => {
-                try {
-                  const user = JSON.parse(localStorage.getItem("bb:user") || "{}");
-                  return user.name?.charAt(0).toUpperCase() || "U";
-                } catch {
-                  return "U";
-                }
+                const map: Record<string, string> = { burger: "🍔", pizza: "🍕", ramen: "🍜", salad: "🥗", biryani: "🍛", ice: "🍦", coffee: "☕", taco: "🌮" };
+                const a = localStorage.getItem("bb:avatar") || "burger";
+                return map[a] || "🍔";
               })()}
             </button>
           </div>
