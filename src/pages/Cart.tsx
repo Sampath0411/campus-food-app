@@ -175,15 +175,8 @@ export default function Cart() {
           </dl>
           <Button
             onClick={() => {
-              // Save order to history
-              const restaurant = restaurants[0]; // Get first restaurant as demo
-              addToOrderHistory({
-                id: "ORD-" + Date.now(),
-                restaurantId: restaurant?.id || "unknown",
-                restaurantName: restaurant?.name || "Unknown Restaurant",
-                items: lines.map((l) => ({ name: l.item.name, price: l.item.price, qty: l.qty })),
-                total,
-              });
+              const restaurant = restaurants[0];
+              placeOrderToStore(lines, total, pay, restaurant?.name || "QuickBite");
               navigate("/orders");
             }}
             className="mt-5 h-12 w-full rounded-xl bg-gradient-primary text-base font-semibold shadow-pop"
@@ -202,13 +195,7 @@ export default function Cart() {
         <Button
           onClick={() => {
             const restaurant = restaurants[0];
-            addToOrderHistory({
-              id: "ORD-" + Date.now(),
-              restaurantId: restaurant?.id || "unknown",
-              restaurantName: restaurant?.name || "Unknown Restaurant",
-              items: lines.map((l) => ({ name: l.item.name, price: l.item.price, qty: l.qty })),
-              total,
-            });
+            placeOrderToStore(lines, total, pay, restaurant?.name || "QuickBite");
             navigate("/orders");
           }}
           className="h-12 w-full rounded-xl bg-gradient-primary text-base font-semibold shadow-pop"
