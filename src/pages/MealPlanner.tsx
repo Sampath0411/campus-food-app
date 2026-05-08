@@ -7,6 +7,7 @@ import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { menu, MenuItem } from "@/data/mock";
 import { useCart } from "@/context/CartContext";
 import { toast } from "@/hooks/use-toast";
+import { budgetSchema, rateLimit } from "@/lib/security";
 
 type Diet = "any" | "veg" | "high-protein";
 type DayPlan = {
