@@ -13,6 +13,7 @@ import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { GroupOrder as GroupOrderT, groupStore, totalsFor } from "@/lib/groupStore";
 import { menu } from "@/data/mock";
 import { toast } from "@/hooks/use-toast";
+import { nameSchema, groupCodeSchema, rateLimit, safeText } from "@/lib/security";
 
 function shareLinkFor(code: string) {
   return `${window.location.origin}/g/${code}`;
