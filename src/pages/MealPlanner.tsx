@@ -140,11 +140,26 @@ export default function MealPlanner() {
               value={diet}
               onValueChange={(v) => v && setDiet(v as Diet)}
               size="sm"
-              className="mt-1"
+              className="mt-1 rounded-xl border border-border bg-background p-1"
             >
-              <ToggleGroupItem value="any" className="text-xs">Any</ToggleGroupItem>
-              <ToggleGroupItem value="veg" className="text-xs">Veg</ToggleGroupItem>
-              <ToggleGroupItem value="high-protein" className="text-xs">High-protein</ToggleGroupItem>
+              <ToggleGroupItem
+                value="any"
+                className="text-xs text-foreground data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
+              >
+                Any
+              </ToggleGroupItem>
+              <ToggleGroupItem
+                value="veg"
+                className="text-xs text-foreground data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
+              >
+                Veg
+              </ToggleGroupItem>
+              <ToggleGroupItem
+                value="high-protein"
+                className="text-xs text-foreground data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
+              >
+                High-protein
+              </ToggleGroupItem>
             </ToggleGroup>
           </div>
           <Button
