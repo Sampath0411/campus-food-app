@@ -7,6 +7,7 @@ import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { menu, MenuItem } from "@/data/mock";
 import { useCart } from "@/context/CartContext";
 import { toast } from "@/hooks/use-toast";
+import { budgetSchema, rateLimit } from "@/lib/security";
 
 type Diet = "any" | "veg" | "high-protein";
 type DayPlan = {
@@ -68,9 +69,18 @@ export default function MealPlanner() {
   const cart = useCart();
 
   function generate() {
+    const rl = rateLimit("meal:generate", 5, 10_000);
+    if (!rl.ok) {
+      toast({ title: "Slow down", description: `Try again in ${Math.ceil(rl.retryInMs / 1000)}s.` });
+      return;
+    }
+    const parsed = budgetSchema.safeParse(budget);
+    if (!parsed.success) {
+      toast({ title: "Invalid budget", description: parsed.error.issues[0].message });
+      return;
+    }
     setLoading(true);
     setPlan(null);
-    // Simulate AI thinking
     setTimeout(() => {
       setPlan(pickFor(budget, diet));
       setLoading(false);
@@ -140,11 +150,26 @@ export default function MealPlanner() {
               value={diet}
               onValueChange={(v) => v && setDiet(v as Diet)}
               size="sm"
-              className="mt-1"
+              className="mt-1 rounded-xl border border-border bg-background p-1"
             >
-              <ToggleGroupItem value="any" className="text-xs">Any</ToggleGroupItem>
-              <ToggleGroupItem value="veg" className="text-xs">Veg</ToggleGroupItem>
-              <ToggleGroupItem value="high-protein" className="text-xs">High-protein</ToggleGroupItem>
+              <ToggleGroupItem
+                value="any"
+                className="text-xs text-foreground data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
+              >
+                Any
+              </ToggleGroupItem>
+              <ToggleGroupItem
+                value="veg"
+                className="text-xs text-foreground data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
+              >
+                Veg
+              </ToggleGroupItem>
+              <ToggleGroupItem
+                value="high-protein"
+                className="text-xs text-foreground data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
+              >
+                High-protein
+              </ToggleGroupItem>
             </ToggleGroup>
           </div>
           <Button
