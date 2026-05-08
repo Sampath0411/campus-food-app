@@ -5,7 +5,6 @@ import {
   ScrollText,
   Users,
   CalendarClock,
-  Settings,
   Search,
   MapPin,
   ShoppingCart,
@@ -13,6 +12,8 @@ import {
   Sun,
   User,
   Sparkles,
+  Truck,
+  MessageCircle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useCart } from "@/context/CartContext";
@@ -24,11 +25,26 @@ const navItems = [
   { to: "/", label: "Home", icon: Home },
   { to: "/search", label: "Search", icon: Search },
   { to: "/recent-orders", label: "Recent Orders", icon: ScrollText },
-  { to: "/orders", label: "Track Order", icon: ScrollText },
+  { to: "/orders", label: "Track Order", icon: Truck },
   { to: "/group", label: "Group Orders", icon: Users },
   { to: "/meal-planner", label: "AI Meal Planner", icon: Sparkles },
   { to: "/scheduled", label: "Scheduled", icon: CalendarClock },
 ];
+
+const AI_TIPS = [
+  "Mac & Cheese + Cola — under your ₹200 budget.",
+  "Try a paneer wrap + lassi — high protein under ₹180.",
+  "Late night? Maggi + masala chai for ₹90.",
+  "Veg thali combo — balanced and under ₹150.",
+  "Biryani + raita — comfort pick for today.",
+  "Chole bhature + lassi — weekend treat under ₹220.",
+  "Idli sambhar + filter coffee — light start under ₹120.",
+];
+function tipOfTheDay() {
+  const d = new Date();
+  const day = Math.floor(d.getTime() / 86400000);
+  return AI_TIPS[day % AI_TIPS.length];
+}
 
 const mobileNav = [
   { to: "/", label: "Home", icon: Home },
@@ -43,10 +59,10 @@ export function AppShell({ children }: { children: ReactNode }) {
   const navigate = useNavigate();
   const geo = useGeolocation();
   const [dark, setDark] = useState(() => {
-    // Default to dark mode unless user explicitly chose light
     const saved = localStorage.getItem("bb:dark-mode");
     return saved === null ? true : JSON.parse(saved);
   });
+  const [aiOpen, setAiOpen] = useState(false);
 
   // Persist dark mode on toggle
   useEffect(() => {
@@ -101,6 +117,16 @@ export function AppShell({ children }: { children: ReactNode }) {
                 </p>
               </div>
             </button>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="rounded-full text-primary"
+              onClick={() => setAiOpen(true)}
+              aria-label="Open AI Concierge"
+              title="AI Concierge"
+            >
+              <MessageCircle className="h-4 w-4" />
+            </Button>
             <Button
               variant="ghost"
               size="icon"
@@ -168,7 +194,7 @@ export function AppShell({ children }: { children: ReactNode }) {
               <Sparkles className="h-3.5 w-3.5" /> AI Concierge
             </div>
             <p className="mt-2 font-display text-base font-bold leading-tight">
-              "Mac & Cheese + Cola — under your ₹200 budget."
+              "{tipOfTheDay()}"
             </p>
             <Button size="sm" variant="secondary" className="mt-3 rounded-full" onClick={() => navigate("/meal-planner")}>
               Plan my week
@@ -209,8 +235,8 @@ export function AppShell({ children }: { children: ReactNode }) {
         </div>
       </nav>
 
-      {/* AI Concierge Chatbot */}
-      <AIConcierge />
+      {/* AI Concierge (controlled from topbar button) */}
+      <AIConcierge open={aiOpen} onOpenChange={setAiOpen} hideFab />
     </div>
   );
 }

@@ -114,7 +114,7 @@ export default function MealPlanner() {
                 max={10000}
                 step={100}
                 onChange={(e) => setBudget(Number(e.target.value) || 0)}
-                className="h-10 rounded-xl bg-card"
+                className="h-10 rounded-xl bg-background text-foreground placeholder:text-muted-foreground border-border"
               />
             </div>
             <div className="mt-2 flex flex-wrap gap-1.5">
@@ -125,7 +125,7 @@ export default function MealPlanner() {
                   className={`rounded-full border px-2.5 py-0.5 text-[11px] font-semibold transition-all ${
                     budget === b
                       ? "border-primary bg-primary text-primary-foreground"
-                      : "border-border bg-card hover:border-primary"
+                      : "border-border bg-background text-foreground hover:border-primary hover:bg-muted"
                   }`}
                 >
                   ₹{b}
