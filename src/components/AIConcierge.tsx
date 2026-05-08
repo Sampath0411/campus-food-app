@@ -115,21 +115,23 @@ export function AIConcierge({ open: controlledOpen, onOpenChange, hideFab }: AIC
 
   return (
     <>
-      {/* Floating AI Button */}
-      <button
-        onClick={() => setOpen(true)}
-        className={cn(
-          "fixed z-50 rounded-full p-4 shadow-pop transition-all hover:scale-110",
-          "bg-gradient-primary text-primary-foreground",
-          open ? "bottom-4 right-4 opacity-0 pointer-events-none" : "bottom-6 right-6"
-        )}
-        aria-label="Open AI Concierge"
-      >
-        <MessageCircle className="h-6 w-6" />
-        <span className="absolute -top-1 -right-1 flex h-4 w-4">
-          <Sparkles className="h-4 w-4 text-yellow-300" />
-        </span>
-      </button>
+      {/* Floating AI Button (optional) */}
+      {!hideFab && (
+        <button
+          onClick={() => setOpen(true)}
+          className={cn(
+            "fixed z-50 rounded-full p-4 shadow-pop transition-all hover:scale-110",
+            "bg-gradient-primary text-primary-foreground",
+            open ? "bottom-4 right-4 opacity-0 pointer-events-none" : "bottom-6 right-6"
+          )}
+          aria-label="Open AI Concierge"
+        >
+          <MessageCircle className="h-6 w-6" />
+          <span className="absolute -top-1 -right-1 flex h-4 w-4">
+            <Sparkles className="h-4 w-4 text-yellow-300" />
+          </span>
+        </button>
+      )}
 
       {/* Chat Window */}
       {open && (
