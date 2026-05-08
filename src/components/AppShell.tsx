@@ -59,10 +59,10 @@ export function AppShell({ children }: { children: ReactNode }) {
   const navigate = useNavigate();
   const geo = useGeolocation();
   const [dark, setDark] = useState(() => {
-    // Default to dark mode unless user explicitly chose light
     const saved = localStorage.getItem("bb:dark-mode");
     return saved === null ? true : JSON.parse(saved);
   });
+  const [aiOpen, setAiOpen] = useState(false);
 
   // Persist dark mode on toggle
   useEffect(() => {
@@ -117,6 +117,16 @@ export function AppShell({ children }: { children: ReactNode }) {
                 </p>
               </div>
             </button>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="rounded-full text-primary"
+              onClick={() => setAiOpen(true)}
+              aria-label="Open AI Concierge"
+              title="AI Concierge"
+            >
+              <MessageCircle className="h-4 w-4" />
+            </Button>
             <Button
               variant="ghost"
               size="icon"
@@ -184,7 +194,7 @@ export function AppShell({ children }: { children: ReactNode }) {
               <Sparkles className="h-3.5 w-3.5" /> AI Concierge
             </div>
             <p className="mt-2 font-display text-base font-bold leading-tight">
-              "Mac & Cheese + Cola — under your ₹200 budget."
+              "{tipOfTheDay()}"
             </p>
             <Button size="sm" variant="secondary" className="mt-3 rounded-full" onClick={() => navigate("/meal-planner")}>
               Plan my week
@@ -225,8 +235,8 @@ export function AppShell({ children }: { children: ReactNode }) {
         </div>
       </nav>
 
-      {/* AI Concierge Chatbot */}
-      <AIConcierge />
+      {/* AI Concierge (controlled from topbar button) */}
+      <AIConcierge open={aiOpen} onOpenChange={setAiOpen} hideFab />
     </div>
   );
 }
