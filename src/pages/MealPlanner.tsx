@@ -68,9 +68,18 @@ export default function MealPlanner() {
   const cart = useCart();
 
   function generate() {
+    const rl = rateLimit("meal:generate", 5, 10_000);
+    if (!rl.ok) {
+      toast({ title: "Slow down", description: `Try again in ${Math.ceil(rl.retryInMs / 1000)}s.` });
+      return;
+    }
+    const parsed = budgetSchema.safeParse(budget);
+    if (!parsed.success) {
+      toast({ title: "Invalid budget", description: parsed.error.issues[0].message });
+      return;
+    }
     setLoading(true);
     setPlan(null);
-    // Simulate AI thinking
     setTimeout(() => {
       setPlan(pickFor(budget, diet));
       setLoading(false);

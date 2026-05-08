@@ -61,8 +61,18 @@ export default function GroupOrder() {
   const totals = useMemo(() => (group ? totalsFor(group) : null), [group]);
   const me = group && meId ? group.members.find((m) => m.id === meId) ?? null : null;
 
-  function handleCreate(name: string) {
-    const g = groupStore.create({ hostName: name || "Sampath", title: "Block C · Friday Feast" });
+  function handleCreate(rawName: string) {
+    const rl = rateLimit("group:create", 3, 15_000);
+    if (!rl.ok) {
+      toast({ title: "Slow down", description: `Try again in ${Math.ceil(rl.retryInMs / 1000)}s.` });
+      return;
+    }
+    const parsed = nameSchema.safeParse(safeText(rawName || "Sampath", 40));
+    if (!parsed.success) {
+      toast({ title: "Invalid name", description: parsed.error.issues[0].message });
+      return;
+    }
+    const g = groupStore.create({ hostName: parsed.data, title: "Block C · Friday Feast" });
     localStorage.setItem("bb:me-member", g.members[0].id);
     setMeId(g.members[0].id);
     setCode(g.code);
@@ -71,14 +81,19 @@ export default function GroupOrder() {
 
   function handleJoin() {
     if (!code) return;
-    const name = joinName.trim();
-    if (!name) {
-      toast({ title: "Name required", description: "Tell us who's joining." });
+    const rl = rateLimit("group:join", 5, 10_000);
+    if (!rl.ok) {
+      toast({ title: "Slow down", description: `Try again in ${Math.ceil(rl.retryInMs / 1000)}s.` });
       return;
     }
-    const g = groupStore.join(code, name);
+    const parsed = nameSchema.safeParse(safeText(joinName, 40));
+    if (!parsed.success) {
+      toast({ title: "Invalid name", description: parsed.error.issues[0].message });
+      return;
+    }
+    const g = groupStore.join(code, parsed.data);
     if (!g) return;
-    const mine = g.members.find((m) => m.name.toLowerCase() === name.toLowerCase());
+    const mine = g.members.find((m) => m.name.toLowerCase() === parsed.data.toLowerCase());
     if (mine) {
       localStorage.setItem("bb:me-member", mine.id);
       setMeId(mine.id);
@@ -107,11 +122,15 @@ export default function GroupOrder() {
   // -------- Empty state: no group yet ----------
   if (!group) {
     return <EmptyState onCreate={handleCreate} onJoin={(c, n) => {
-      const g = groupStore.join(c, n);
-      if (!g) { toast({ title: "Invalid code" }); return; }
-      const mine = g.members.find((m) => m.name.toLowerCase() === n.toLowerCase());
+      const codeParsed = groupCodeSchema.safeParse(c.toUpperCase());
+      if (!codeParsed.success) { toast({ title: "Invalid code", description: codeParsed.error.issues[0].message }); return; }
+      const nameParsed = nameSchema.safeParse(safeText(n, 40));
+      if (!nameParsed.success) { toast({ title: "Invalid name", description: nameParsed.error.issues[0].message }); return; }
+      const g = groupStore.join(codeParsed.data, nameParsed.data);
+      if (!g) { toast({ title: "Group not found" }); return; }
+      const mine = g.members.find((m) => m.name.toLowerCase() === nameParsed.data.toLowerCase());
       if (mine) { localStorage.setItem("bb:me-member", mine.id); setMeId(mine.id); }
-      setCode(c);
+      setCode(codeParsed.data);
     }} />;
   }
 
