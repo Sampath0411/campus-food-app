@@ -6,8 +6,19 @@ import { cn } from "@/lib/utils";
 import { getAIRecommendation, chatWithAI, ChatMessage, smartSearch } from "@/lib/groq";
 import { useNavigate } from "react-router-dom";
 
-export function AIConcierge() {
-  const [open, setOpen] = useState(false);
+interface AIConciergeProps {
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+  hideFab?: boolean;
+}
+
+export function AIConcierge({ open: controlledOpen, onOpenChange, hideFab }: AIConciergeProps = {}) {
+  const [internalOpen, setInternalOpen] = useState(false);
+  const open = controlledOpen ?? internalOpen;
+  const setOpen = (v: boolean) => {
+    if (onOpenChange) onOpenChange(v);
+    else setInternalOpen(v);
+  };
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
       role: "assistant",
