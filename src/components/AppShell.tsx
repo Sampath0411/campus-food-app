@@ -5,7 +5,6 @@ import {
   ScrollText,
   Users,
   CalendarClock,
-  Settings,
   Search,
   MapPin,
   ShoppingCart,
@@ -13,6 +12,8 @@ import {
   Sun,
   User,
   Sparkles,
+  Truck,
+  MessageCircle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useCart } from "@/context/CartContext";
@@ -24,11 +25,26 @@ const navItems = [
   { to: "/", label: "Home", icon: Home },
   { to: "/search", label: "Search", icon: Search },
   { to: "/recent-orders", label: "Recent Orders", icon: ScrollText },
-  { to: "/orders", label: "Track Order", icon: ScrollText },
+  { to: "/orders", label: "Track Order", icon: Truck },
   { to: "/group", label: "Group Orders", icon: Users },
   { to: "/meal-planner", label: "AI Meal Planner", icon: Sparkles },
   { to: "/scheduled", label: "Scheduled", icon: CalendarClock },
 ];
+
+const AI_TIPS = [
+  "Mac & Cheese + Cola — under your ₹200 budget.",
+  "Try a paneer wrap + lassi — high protein under ₹180.",
+  "Late night? Maggi + masala chai for ₹90.",
+  "Veg thali combo — balanced and under ₹150.",
+  "Biryani + raita — comfort pick for today.",
+  "Chole bhature + lassi — weekend treat under ₹220.",
+  "Idli sambhar + filter coffee — light start under ₹120.",
+];
+function tipOfTheDay() {
+  const d = new Date();
+  const day = Math.floor(d.getTime() / 86400000);
+  return AI_TIPS[day % AI_TIPS.length];
+}
 
 const mobileNav = [
   { to: "/", label: "Home", icon: Home },
