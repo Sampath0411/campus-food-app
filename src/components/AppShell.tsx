@@ -14,6 +14,8 @@ import {
   Sparkles,
   Truck,
   MessageCircle,
+  Vote,
+  Refrigerator,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useCart } from "@/context/CartContext";
@@ -28,6 +30,8 @@ const navItems = [
   { to: "/orders", label: "Track Order", icon: Truck },
   { to: "/group", label: "Group Orders", icon: Users },
   { to: "/meal-planner", label: "AI Meal Planner", icon: Sparkles },
+  { to: "/fridge", label: "Fridge AI", icon: Refrigerator },
+  { to: "/polls", label: "Food Polls", icon: Vote },
   { to: "/scheduled", label: "Scheduled", icon: CalendarClock },
 ];
 

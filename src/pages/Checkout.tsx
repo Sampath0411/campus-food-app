@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Smartphone, CheckCircle, Loader2, QrCode, Copy, Check } from "lucide-react";
+import { Smartphone, CheckCircle, Loader2, QrCode, Copy, Check, Clock, Wallet } from "lucide-react";
 import { QRCodeSVG } from "qrcode.react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,6 +9,8 @@ import { useCart } from "@/context/CartContext";
 import { buildUPILink, openUPIIntent, isMobile } from "@/lib/payments";
 import { useAuth } from "@/hooks/useAuth";
 import { addSpend } from "@/lib/budget";
+import { getBalance, debit } from "@/lib/wallet";
+import { cn } from "@/lib/utils";
 import { toast } from "@/hooks/use-toast";
 
 const MERCHANT_UPI = "quickbite@ybl";
@@ -32,9 +34,33 @@ export default function Checkout() {
     pincode: "",
   });
 
+  // Delivery slots
+  const SLOTS = useMemo(() => {
+    const base = new Date();
+    const out: { id: string; label: string; sub: string }[] = [
+      { id: "asap", label: "ASAP", sub: "20–30 min" },
+    ];
+    for (let i = 1; i <= 6; i++) {
+      const t = new Date(base.getTime() + i * 30 * 60_000);
+      const hh = t.getHours();
+      const mm = String(t.getMinutes()).padStart(2, "0");
+      const ampm = hh >= 12 ? "PM" : "AM";
+      const h12 = ((hh + 11) % 12) + 1;
+      out.push({ id: `s${i}`, label: `${h12}:${mm} ${ampm}`, sub: `+${i * 30} min` });
+    }
+    return out;
+  }, []);
+  const [slot, setSlot] = useState("asap");
+
+  // Wallet
+  const walletBal = getBalance();
+  const [useWallet, setUseWallet] = useState(false);
+
   const deliveryFee = total > 300 ? 0 : 30;
   const platformFee = 5;
-  const grandTotal = total + deliveryFee + platformFee;
+  const subBeforeWallet = total + deliveryFee + platformFee;
+  const walletApplied = useWallet ? Math.min(walletBal, subBeforeWallet) : 0;
+  const grandTotal = subBeforeWallet - walletApplied;
 
   const txnRef = useMemo(() => `QB${Date.now()}`, [qrOpen]);
   const upiLink = buildUPILink({
@@ -54,8 +80,10 @@ export default function Checkout() {
   }
 
   function recordOrder() {
+    if (walletApplied > 0) debit(walletApplied, `Used at checkout (${txnRef})`);
     addSpend(grandTotal, `Order ${txnRef}`);
-    navigate("/orders", { state: { orderId: txnRef, amount: grandTotal } });
+    const slotLabel = SLOTS.find((s) => s.id === slot)?.label || "ASAP";
+    navigate("/orders", { state: { orderId: txnRef, amount: grandTotal, slot: slotLabel } });
   }
 
   function handleMobilePay() {
@@ -128,8 +156,42 @@ export default function Checkout() {
             <div className="flex justify-between"><span className="text-muted-foreground">Subtotal</span><span>₹{total}</span></div>
             <div className="flex justify-between"><span className="text-muted-foreground">Delivery Fee</span><span>{deliveryFee === 0 ? "FREE" : `₹${deliveryFee}`}</span></div>
             <div className="flex justify-between"><span className="text-muted-foreground">Platform Fee</span><span>₹{platformFee}</span></div>
+            {walletApplied > 0 && (
+              <div className="flex justify-between text-accent"><span>Wallet credit</span><span>− ₹{walletApplied}</span></div>
+            )}
             <div className="flex justify-between border-t border-border pt-2 font-semibold"><span>To Pay</span><span>₹{grandTotal}</span></div>
           </div>
+
+          {/* Delivery slot */}
+          <div className="mt-5 border-t border-border pt-4">
+            <h3 className="mb-2 flex items-center gap-2 text-sm font-semibold"><Clock className="h-4 w-4 text-primary" /> Delivery slot</h3>
+            <div className="flex flex-wrap gap-2">
+              {SLOTS.map((s) => (
+                <button
+                  key={s.id}
+                  onClick={() => setSlot(s.id)}
+                  className={cn("rounded-xl border px-3 py-2 text-left transition-all",
+                    slot === s.id ? "border-primary bg-primary/10" : "border-border hover:border-primary/50")}
+                >
+                  <div className="text-xs font-bold">{s.label}</div>
+                  <div className="text-[10px] text-muted-foreground">{s.sub}</div>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Wallet */}
+          {walletBal > 0 && (
+            <div className="mt-4 flex items-center justify-between rounded-xl border border-accent/30 bg-accent/5 p-3">
+              <div className="flex items-center gap-2 text-sm">
+                <Wallet className="h-4 w-4 text-accent" />
+                <span>Use wallet (₹{walletBal} available)</span>
+              </div>
+              <button role="switch" aria-checked={useWallet} onClick={() => setUseWallet((v) => !v)} className={cn("relative h-6 w-11 rounded-full transition-colors", useWallet ? "bg-accent" : "bg-muted")}>
+                <span className={cn("absolute top-0.5 h-5 w-5 rounded-full bg-background transition-all", useWallet ? "left-5" : "left-0.5")} />
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Delivery Details */}

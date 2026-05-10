@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { MapPin, Bell, CreditCard, LogOut, Sparkles, Home, Edit, Phone, Moon, Sun, Languages, Wallet, Check, X } from "lucide-react";
+import { MapPin, Bell, CreditCard, LogOut, Sparkles, Home, Edit, Phone, Moon, Sun, Languages, Wallet, Check, X, Gift, Copy } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -8,6 +8,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useI18n, LANGS, Lang } from "@/lib/i18n";
 import { summary, getWeeklyLimit, setWeeklyLimit, addSpend } from "@/lib/budget";
+import { getReferralCode, getBalance, redeemCode, getTxns } from "@/lib/wallet";
 import { supabase } from "@/lib/supabase";
 import { toast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
@@ -87,6 +88,28 @@ export default function Profile() {
   const [prefs, setPrefs] = useState<Prefs>(loadPrefs);
   useEffect(() => { localStorage.setItem(PREFS_KEY, JSON.stringify(prefs)); }, [prefs]);
   const [open, setOpen] = useState<"notif" | "pay" | "ai" | null>(null);
+
+  // Wallet / referral
+  const [refCode] = useState(() => getReferralCode());
+  const [walletBal, setWalletBal] = useState(getBalance());
+  const [walletTxns, setWalletTxns] = useState(getTxns());
+  const [redeemInput, setRedeemInput] = useState("");
+  const [copiedRef, setCopiedRef] = useState(false);
+  useEffect(() => {
+    const sync = () => { setWalletBal(getBalance()); setWalletTxns(getTxns()); };
+    window.addEventListener("bb:wallet:update", sync);
+    return () => window.removeEventListener("bb:wallet:update", sync);
+  }, []);
+  function doRedeem() {
+    const r = redeemCode(redeemInput);
+    toast({ title: r.ok ? "Redeemed!" : "Couldn't redeem", description: r.msg, variant: r.ok ? undefined : "destructive" });
+    if (r.ok) setRedeemInput("");
+  }
+  function copyRef() {
+    navigator.clipboard.writeText(refCode);
+    setCopiedRef(true);
+    setTimeout(() => setCopiedRef(false), 1500);
+  }
 
   async function saveProfile() {
     if (!name.trim() || !/^[6-9]\d{9}$/.test(phone.replace(/\s/g, ""))) {
@@ -373,6 +396,53 @@ export default function Profile() {
           </div>
           <Button size="sm" variant="outline" className="rounded-full" onClick={() => setEditing(true)}>{t("common.add")}</Button>
         </div>
+      </section>
+
+      {/* Wallet & Refer */}
+      <section className="rounded-2xl border border-border bg-gradient-primary p-5 text-primary-foreground shadow-pop">
+        <div className="flex items-start gap-3">
+          <div className="grid h-12 w-12 place-items-center rounded-full bg-background/20"><Gift className="h-6 w-6" /></div>
+          <div className="flex-1 min-w-0">
+            <p className="text-xs font-semibold uppercase opacity-90">Refer & Earn</p>
+            <h2 className="font-display text-xl font-bold">QuickBite Wallet</h2>
+            <p className="mt-1 text-3xl font-bold">₹{walletBal}</p>
+          </div>
+        </div>
+
+        <div className="mt-4 rounded-xl bg-background/15 p-3">
+          <p className="text-[10px] font-semibold uppercase opacity-80">Your code — share it</p>
+          <div className="mt-1 flex items-center gap-2">
+            <span className="font-mono text-lg font-bold tracking-wider">{refCode}</span>
+            <button onClick={copyRef} className="rounded-full bg-background/20 p-1.5 hover:bg-background/30">
+              {copiedRef ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
+            </button>
+          </div>
+          <p className="mt-1 text-[11px] opacity-90">Friend signs up → both get ₹50 in wallet.</p>
+        </div>
+
+        <div className="mt-3 flex gap-2">
+          <Input
+            value={redeemInput}
+            onChange={(e) => setRedeemInput(e.target.value.toUpperCase())}
+            placeholder="Enter friend's code (QB-XXXXXX)"
+            className="h-9 bg-background/20 border-background/30 text-primary-foreground placeholder:text-primary-foreground/60"
+          />
+          <Button onClick={doRedeem} variant="secondary" size="sm" className="rounded-full">Redeem</Button>
+        </div>
+
+        {walletTxns.length > 0 && (
+          <details className="mt-3">
+            <summary className="cursor-pointer text-xs opacity-80 hover:opacity-100">Transaction history ({walletTxns.length})</summary>
+            <ul className="mt-2 space-y-1 text-xs">
+              {walletTxns.slice(0, 5).map((t) => (
+                <li key={t.id} className="flex justify-between rounded bg-background/10 px-2 py-1">
+                  <span className="opacity-90">{t.reason}</span>
+                  <span className={cn("font-semibold", t.amount > 0 ? "text-emerald-300" : "text-rose-200")}>{t.amount > 0 ? "+" : ""}₹{t.amount}</span>
+                </li>
+              ))}
+            </ul>
+          </details>
+        )}
       </section>
 
       {/* Sign out */}
