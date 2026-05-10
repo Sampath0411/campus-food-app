@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Smartphone, CheckCircle, Loader2, QrCode, Copy, Check } from "lucide-react";
+import { Smartphone, CheckCircle, Loader2, QrCode, Copy, Check, Clock, Wallet } from "lucide-react";
 import { QRCodeSVG } from "qrcode.react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,6 +9,8 @@ import { useCart } from "@/context/CartContext";
 import { buildUPILink, openUPIIntent, isMobile } from "@/lib/payments";
 import { useAuth } from "@/hooks/useAuth";
 import { addSpend } from "@/lib/budget";
+import { getBalance, debit } from "@/lib/wallet";
+import { cn } from "@/lib/utils";
 import { toast } from "@/hooks/use-toast";
 
 const MERCHANT_UPI = "quickbite@ybl";
@@ -32,9 +34,33 @@ export default function Checkout() {
     pincode: "",
   });
 
+  // Delivery slots
+  const SLOTS = useMemo(() => {
+    const base = new Date();
+    const out: { id: string; label: string; sub: string }[] = [
+      { id: "asap", label: "ASAP", sub: "20–30 min" },
+    ];
+    for (let i = 1; i <= 6; i++) {
+      const t = new Date(base.getTime() + i * 30 * 60_000);
+      const hh = t.getHours();
+      const mm = String(t.getMinutes()).padStart(2, "0");
+      const ampm = hh >= 12 ? "PM" : "AM";
+      const h12 = ((hh + 11) % 12) + 1;
+      out.push({ id: `s${i}`, label: `${h12}:${mm} ${ampm}`, sub: `+${i * 30} min` });
+    }
+    return out;
+  }, []);
+  const [slot, setSlot] = useState("asap");
+
+  // Wallet
+  const walletBal = getBalance();
+  const [useWallet, setUseWallet] = useState(false);
+
   const deliveryFee = total > 300 ? 0 : 30;
   const platformFee = 5;
-  const grandTotal = total + deliveryFee + platformFee;
+  const subBeforeWallet = total + deliveryFee + platformFee;
+  const walletApplied = useWallet ? Math.min(walletBal, subBeforeWallet) : 0;
+  const grandTotal = subBeforeWallet - walletApplied;
 
   const txnRef = useMemo(() => `QB${Date.now()}`, [qrOpen]);
   const upiLink = buildUPILink({
@@ -54,8 +80,10 @@ export default function Checkout() {
   }
 
   function recordOrder() {
+    if (walletApplied > 0) debit(walletApplied, `Used at checkout (${txnRef})`);
     addSpend(grandTotal, `Order ${txnRef}`);
-    navigate("/orders", { state: { orderId: txnRef, amount: grandTotal } });
+    const slotLabel = SLOTS.find((s) => s.id === slot)?.label || "ASAP";
+    navigate("/orders", { state: { orderId: txnRef, amount: grandTotal, slot: slotLabel } });
   }
 
   function handleMobilePay() {
