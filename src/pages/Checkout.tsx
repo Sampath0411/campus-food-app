@@ -156,8 +156,42 @@ export default function Checkout() {
             <div className="flex justify-between"><span className="text-muted-foreground">Subtotal</span><span>₹{total}</span></div>
             <div className="flex justify-between"><span className="text-muted-foreground">Delivery Fee</span><span>{deliveryFee === 0 ? "FREE" : `₹${deliveryFee}`}</span></div>
             <div className="flex justify-between"><span className="text-muted-foreground">Platform Fee</span><span>₹{platformFee}</span></div>
+            {walletApplied > 0 && (
+              <div className="flex justify-between text-accent"><span>Wallet credit</span><span>− ₹{walletApplied}</span></div>
+            )}
             <div className="flex justify-between border-t border-border pt-2 font-semibold"><span>To Pay</span><span>₹{grandTotal}</span></div>
           </div>
+
+          {/* Delivery slot */}
+          <div className="mt-5 border-t border-border pt-4">
+            <h3 className="mb-2 flex items-center gap-2 text-sm font-semibold"><Clock className="h-4 w-4 text-primary" /> Delivery slot</h3>
+            <div className="flex flex-wrap gap-2">
+              {SLOTS.map((s) => (
+                <button
+                  key={s.id}
+                  onClick={() => setSlot(s.id)}
+                  className={cn("rounded-xl border px-3 py-2 text-left transition-all",
+                    slot === s.id ? "border-primary bg-primary/10" : "border-border hover:border-primary/50")}
+                >
+                  <div className="text-xs font-bold">{s.label}</div>
+                  <div className="text-[10px] text-muted-foreground">{s.sub}</div>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Wallet */}
+          {walletBal > 0 && (
+            <div className="mt-4 flex items-center justify-between rounded-xl border border-accent/30 bg-accent/5 p-3">
+              <div className="flex items-center gap-2 text-sm">
+                <Wallet className="h-4 w-4 text-accent" />
+                <span>Use wallet (₹{walletBal} available)</span>
+              </div>
+              <button role="switch" aria-checked={useWallet} onClick={() => setUseWallet((v) => !v)} className={cn("relative h-6 w-11 rounded-full transition-colors", useWallet ? "bg-accent" : "bg-muted")}>
+                <span className={cn("absolute top-0.5 h-5 w-5 rounded-full bg-background transition-all", useWallet ? "left-5" : "left-0.5")} />
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Delivery Details */}
