@@ -21,6 +21,8 @@ import Scheduled from "./pages/Scheduled.tsx";
 import RecentOrders from "./pages/RecentOrders.tsx";
 import Checkout from "./pages/Checkout.tsx";
 import MealPlanner from "./pages/MealPlanner.tsx";
+import Polls from "./pages/Polls.tsx";
+import Fridge from "./pages/Fridge.tsx";
 import NotFound from "./pages/NotFound.tsx";
 
 const queryClient = new QueryClient();
@@ -76,6 +78,8 @@ const App = () => {
               <Route path="/scheduled" element={withShell(<ProtectedRoute><Scheduled /></ProtectedRoute>)} />
               <Route path="/checkout" element={withShell(<ProtectedRoute><Checkout /></ProtectedRoute>)} />
               <Route path="/meal-planner" element={withShell(<ProtectedRoute><MealPlanner /></ProtectedRoute>)} />
+              <Route path="/polls" element={withShell(<ProtectedRoute><Polls /></ProtectedRoute>)} />
+              <Route path="/fridge" element={withShell(<ProtectedRoute><Fridge /></ProtectedRoute>)} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </CartProvider>
