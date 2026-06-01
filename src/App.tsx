@@ -35,10 +35,35 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const [authenticated, setAuthenticated] = useState(false);
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setAuthenticated(!!session);
+    let done = false;
+    const finish = (ok: boolean) => {
+      if (done) return;
+      done = true;
+      setAuthenticated(ok);
       setChecking(false);
-    });
+    };
+
+    // Fail-open after 3s if Supabase is unreachable so we don't hang forever
+    const timeout = setTimeout(() => finish(false), 3000);
+
+    supabase.auth
+      .getSession()
+      .then(({ data: { session } }) => {
+        clearTimeout(timeout);
+        finish(!!session);
+      })
+      .catch(() => {
+        clearTimeout(timeout);
+        // Clear stale tokens so the SDK stops looping on refresh
+        try {
+          Object.keys(localStorage)
+            .filter((k) => k.startsWith("sb-"))
+            .forEach((k) => localStorage.removeItem(k));
+        } catch {}
+        finish(false);
+      });
+
+    return () => clearTimeout(timeout);
   }, []);
 
   if (checking) {
