@@ -47,10 +47,10 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
     const timeout = setTimeout(() => finish(false), 3000);
 
     supabase.auth
-      .getSession()
-      .then(({ data: { session } }) => {
+      .getUser()
+      .then(({ data: { user } }) => {
         clearTimeout(timeout);
-        finish(!!session);
+        finish(!!user);
       })
       .catch(() => {
         clearTimeout(timeout);
