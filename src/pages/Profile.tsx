@@ -119,7 +119,8 @@ export default function Profile() {
     setSavingProfile(true);
     try {
       if (user?.id) {
-        await supabase.from("users").update({ name, phone }).eq("id", user.id);
+        const { error } = await supabase.from("users").update({ name, phone }).eq("id", user.id);
+        if (error) throw error;
       }
       toast({ title: "Profile updated" });
       setEditing(false);
@@ -130,8 +131,8 @@ export default function Profile() {
     }
   }
 
-  function handleSignOut() {
-    supabase.auth.signOut();
+  async function handleSignOut() {
+    await supabase.auth.signOut();
     navigate("/login");
   }
 

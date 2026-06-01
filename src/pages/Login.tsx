@@ -83,10 +83,10 @@ export default function Login() {
     try {
       await signUp(name, email, phone, password);
       toast({
-        title: "Account created!",
-        description: "Welcome to QuickBite!",
+        title: "Check your email",
+        description: "Confirm your account, then sign in to QuickBite.",
       });
-      navigate("/");
+      setIsSignup(false);
     } catch (error: any) {
       toast({
         title: "Sign up failed",
