@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
-import { toast } from "@/hooks/use-toast";
 
 interface User {
   id: string;
@@ -14,47 +13,28 @@ export function useAuth() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Check active session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session?.user) {
-        // Fetch user metadata
-        supabase
-          .from("users")
-          .select("*")
-          .eq("id", session.user.id)
-          .single()
-          .then(({ data }) => {
-            if (data) {
-              setUser({
-                id: data.id,
-                name: data.name,
-                email: data.email,
-                phone: data.phone,
-              });
-            }
-          });
-      }
-      setLoading(false);
-    });
+    const loadProfile = async (authUser: any) => {
+      const fallback = {
+        id: authUser.id,
+        name: authUser.user_metadata?.name || authUser.email?.split("@")[0] || "Guest",
+        email: authUser.email || "",
+        phone: authUser.user_metadata?.phone || "",
+      };
+
+      const { data } = await supabase.from("users").select("*").eq("id", authUser.id).maybeSingle();
+      setUser(data ? { id: data.id, name: data.name, email: data.email, phone: data.phone } : fallback);
+    };
+
+    supabase.auth
+      .getUser()
+      .then(({ data: { user: authUser } }) => (authUser ? loadProfile(authUser) : setUser(null)))
+      .catch(() => setUser(null))
+      .finally(() => setLoading(false));
 
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (event === "SIGNED_IN" && session?.user) {
-        supabase
-          .from("users")
-          .select("*")
-          .eq("id", session.user.id)
-          .single()
-          .then(({ data }) => {
-            if (data) {
-              setUser({
-                id: data.id,
-                name: data.name,
-                email: data.email,
-                phone: data.phone,
-              });
-            }
-          });
+        await loadProfile(session.user);
       } else if (event === "SIGNED_OUT") {
         setUser(null);
       }
@@ -68,6 +48,7 @@ export function useAuth() {
       email,
       password,
       options: {
+        emailRedirectTo: window.location.origin,
         data: {
           name,
           phone,
@@ -79,7 +60,7 @@ export function useAuth() {
 
     // Insert user profile after auth signup
     if (data.user) {
-      const { error: insertError } = await supabase.from("users").insert({
+      const { error: insertError } = await supabase.from("users").upsert({
         id: data.user.id,
         name,
         email,
