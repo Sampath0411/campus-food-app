@@ -22,7 +22,13 @@ export function useAuth() {
       };
 
       const { data } = await supabase.from("users").select("*").eq("id", authUser.id).maybeSingle();
-      setUser(data ? { id: data.id, name: data.name, email: data.email, phone: data.phone } : fallback);
+      if (data) {
+        setUser({ id: data.id, name: data.name, email: data.email, phone: data.phone });
+        return;
+      }
+
+      await supabase.from("users").upsert(fallback);
+      setUser(fallback);
     };
 
     supabase.auth
@@ -59,7 +65,7 @@ export function useAuth() {
     if (error) throw error;
 
     // Insert user profile after auth signup
-    if (data.user) {
+    if (data.user && data.session) {
       const { error: insertError } = await supabase.from("users").upsert({
         id: data.user.id,
         name,
