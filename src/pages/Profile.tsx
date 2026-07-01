@@ -49,7 +49,7 @@ const defaults: Prefs = {
 export default function Profile() {
   const geo = useGeolocation();
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, signOut } = useAuth();
   const { t, lang, setLang } = useI18n();
 
   const [dark, setDark] = useState(() => {
@@ -132,7 +132,7 @@ export default function Profile() {
   }
 
   async function handleSignOut() {
-    await supabase.auth.signOut();
+    await signOut();
     navigate("/login");
   }
 

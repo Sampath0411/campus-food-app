@@ -22,7 +22,7 @@ interface Address {
 
 export default function EditProfile() {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, refreshUser } = useAuth();
   const [name, setName] = useState(user?.name || "");
   const [phone, setPhone] = useState(user?.phone || "");
   const [password, setPassword] = useState("");
@@ -69,6 +69,7 @@ export default function EditProfile() {
         .eq("id", user?.id);
 
       if (error) throw error;
+      await refreshUser();
 
       // Update password if provided
       if (password) {
