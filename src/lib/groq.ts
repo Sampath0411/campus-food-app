@@ -60,32 +60,22 @@ export async function getAIRecommendation(
     location?: string;
   }
 ): Promise<AIRecommendation> {
-  const context = buildMenuContext();
-
-  const prompt = `${context}\n\nUser query: "${userQuery}"\n${userPrefs?.budget ? `Budget: Under ₹${userPrefs.budget}` : ""}\n${userPrefs?.vegOnly ? "Preference: Vegetarian only" : ""}\n\nProvide a specific restaurant and dish recommendation.`;
-
   try {
     const q = userQuery.toLowerCase();
     const max = userPrefs?.budget ?? (q.match(/(?:under|below|₹)\s*(\d+)/)?.[1] ? Number(q.match(/(?:under|below|₹)\s*(\d+)/)?.[1]) : 220);
     const dishes = menu.filter((m) => m.price <= max && (!userPrefs?.vegOnly || m.veg));
     const picked = dishes.find((m) => q.includes(m.category.toLowerCase()) || q.includes(m.name.toLowerCase().split(" ")[0])) || dishes[0] || menu[0];
-    const matchedRestaurant = restaurants.find((r) => r.id === picked.restaurantId) || restaurants[0];
+    const matchedRestaurant =
+      restaurants.find((r) => q.includes(r.name.toLowerCase()) || q.includes(r.cuisine.toLowerCase().split(" ")[0])) ||
+      restaurants.find((r) => r.priceFor2 <= max * 2 && (!userPrefs?.vegOnly || r.tags.includes("Veg"))) ||
+      restaurants[0];
     const aiResponse = `${matchedRestaurant.name} is a smart pick: try ${picked.name} for ₹${picked.price}. It fits your budget and should reach in about ${matchedRestaurant.eta}.`;
 
-    // Extract restaurant/dish from response (simple keyword matching)
-    const lowerResponse = aiResponse.toLowerCase();
-    const matchedRestaurant = restaurants.find(r =>
-      lowerResponse.includes(r.name.toLowerCase())
-    );
-    const matchedDish = menu.find(m =>
-      lowerResponse.includes(m.name.toLowerCase())
-    );
-
     return {
-      restaurantId: matchedRestaurant?.id,
-      dishId: matchedDish?.id,
+      restaurantId: matchedRestaurant.id,
+      dishId: picked.id,
       message: aiResponse,
-      confidence: matchedRestaurant || matchedDish ? 0.9 : 0.6,
+      confidence: 0.9,
     };
   } catch (err) {
     console.error("[Groq AI] Error:", err);
