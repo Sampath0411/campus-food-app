@@ -14,9 +14,11 @@ interface AuthContextType {
   loading: boolean;
   signOut: () => Promise<void>;
   refreshUser: () => Promise<void>;
+  setLocalUser: (profile: UserProfile) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
+const LOCAL_AUTH_KEY = "bb:local-auth-user";
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<UserProfile | null>(null);
@@ -52,6 +54,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     email: authUser.email || "",
     phone: authUser.user_metadata?.phone || "",
   });
+
+  const readLocalUser = (): UserProfile | null => {
+    try {
+      const raw = localStorage.getItem(LOCAL_AUTH_KEY);
+      return raw ? (JSON.parse(raw) as UserProfile) : null;
+    } catch {
+      return null;
+    }
+  };
+
+  const setLocalUser = (profile: UserProfile) => {
+    localStorage.setItem(LOCAL_AUTH_KEY, JSON.stringify(profile));
+    setUser(profile);
+  };
 
   const loadProfile = async (authUser: SupabaseUser) => {
     const fallback = toFallbackProfile(authUser);
@@ -90,7 +106,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (authUser) {
       await loadProfile(authUser);
     } else {
-      setUser(null);
+      setUser(readLocalUser());
     }
   };
 
@@ -105,7 +121,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         if (authUser) {
           loadProfile(authUser).finally(finish);
         } else {
-          setUser(null);
+          setUser(readLocalUser());
           finish();
         }
       })
@@ -123,7 +139,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           await loadProfile(session.user);
         }
       } else {
-        setUser(null);
+        setUser(readLocalUser());
       }
       setLoading(false);
     });
@@ -136,11 +152,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const signOut = async () => {
     await supabase.auth.signOut();
+    localStorage.removeItem(LOCAL_AUTH_KEY);
     setUser(null);
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, signOut, refreshUser }}>
+    <AuthContext.Provider value={{ user, loading, signOut, refreshUser, setLocalUser }}>
       {children}
     </AuthContext.Provider>
   );
