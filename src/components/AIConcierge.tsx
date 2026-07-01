@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { MessageCircle, X, Send, Sparkles, Utensils, Loader2 } from "lucide-react";
+import { MessageCircle, X, Send, Sparkles, Utensils, Loader2, Pizza, Salad, Flame, Moon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
@@ -22,7 +22,7 @@ export function AIConcierge({ open: controlledOpen, onOpenChange, hideFab }: AIC
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
       role: "assistant",
-      content: "Hey! I'm your QuickBite AI food buddy 🍕 What are you craving today?",
+      content: "Hey! I'm your QuickBite AI food buddy. What are you craving today?",
       timestamp: Date.now(),
     },
   ]);
@@ -107,10 +107,10 @@ export function AIConcierge({ open: controlledOpen, onOpenChange, hideFab }: AIC
   };
 
   const quickPrompts = [
-    "🍕 Suggest something under ₹150",
-    "🥗 Healthy options near me",
-    "🌶️ Spicy biryani recommendations",
-    "🌙 Late night delivery",
+    { icon: Pizza, text: "Suggest something under ₹150" },
+    { icon: Salad, text: "Healthy options near me" },
+    { icon: Flame, text: "Spicy biryani recommendations" },
+    { icon: Moon, text: "Late night delivery" },
   ];
 
   return (
@@ -194,13 +194,13 @@ export function AIConcierge({ open: controlledOpen, onOpenChange, hideFab }: AIC
             {/* Quick Prompts */}
             {!loading && messages.length < 3 && (
               <div className="flex gap-2 overflow-x-auto border-t border-border px-4 py-2">
-                {quickPrompts.map((prompt) => (
+                {quickPrompts.map(({ icon: Icon, text }) => (
                   <button
-                    key={prompt}
-                    onClick={() => handleQuickPrompt(prompt)}
-                    className="whitespace-nowrap rounded-full bg-muted px-3 py-1 text-xs hover:bg-muted/80"
+                    key={text}
+                    onClick={() => handleQuickPrompt(text)}
+                    className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-full bg-muted px-3 py-1 text-xs hover:bg-muted/80"
                   >
-                    {prompt}
+                    <Icon className="h-3 w-3 text-primary" /> {text}
                   </button>
                 ))}
               </div>

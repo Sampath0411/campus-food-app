@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { MapPin, Bell, CreditCard, LogOut, Sparkles, Home, Edit, Phone, Moon, Sun, Languages, Wallet, Check, X, Gift, Copy } from "lucide-react";
+import { MapPin, Bell, CreditCard, LogOut, Sparkles, Home, Edit, Phone, Moon, Sun, Languages, Wallet, Check, X, Gift, Copy, Pizza, Salad, Coffee, IceCream, Soup, Sandwich, Utensils } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -14,14 +14,14 @@ import { toast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 
 const AVATARS = [
-  { id: "burger", emoji: "🍔", bg: "bg-orange-500" },
-  { id: "pizza", emoji: "🍕", bg: "bg-red-500" },
-  { id: "ramen", emoji: "🍜", bg: "bg-amber-500" },
-  { id: "salad", emoji: "🥗", bg: "bg-emerald-500" },
-  { id: "biryani", emoji: "🍛", bg: "bg-yellow-600" },
-  { id: "ice", emoji: "🍦", bg: "bg-pink-400" },
-  { id: "coffee", emoji: "☕", bg: "bg-amber-700" },
-  { id: "taco", emoji: "🌮", bg: "bg-rose-500" },
+  { id: "burger", Icon: Sandwich, bg: "bg-orange-500" },
+  { id: "pizza", Icon: Pizza, bg: "bg-red-500" },
+  { id: "ramen", Icon: Soup, bg: "bg-amber-500" },
+  { id: "salad", Icon: Salad, bg: "bg-emerald-500" },
+  { id: "biryani", Icon: Utensils, bg: "bg-yellow-600" },
+  { id: "ice", Icon: IceCream, bg: "bg-pink-400" },
+  { id: "coffee", Icon: Coffee, bg: "bg-amber-700" },
+  { id: "taco", Icon: Utensils, bg: "bg-rose-500" },
 ];
 
 type Prefs = {
@@ -49,7 +49,7 @@ const defaults: Prefs = {
 export default function Profile() {
   const geo = useGeolocation();
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, signOut } = useAuth();
   const { t, lang, setLang } = useI18n();
 
   const [dark, setDark] = useState(() => {
@@ -132,7 +132,7 @@ export default function Profile() {
   }
 
   async function handleSignOut() {
-    await supabase.auth.signOut();
+    await signOut();
     navigate("/login");
   }
 
@@ -150,10 +150,10 @@ export default function Profile() {
       <header className="flex items-center gap-4">
         <button
           onClick={() => setEditing((e) => !e)}
-          className={cn("grid h-16 w-16 place-items-center rounded-full text-3xl shadow-pop", currentAvatar.bg)}
+          className={cn("grid h-16 w-16 place-items-center rounded-full text-primary-foreground shadow-pop transition-transform hover:scale-105", currentAvatar.bg)}
           title="Change avatar"
         >
-          {currentAvatar.emoji}
+          <currentAvatar.Icon className="h-8 w-8" />
         </button>
         <div className="flex-1">
           <h1 className="font-display text-2xl font-bold">{t("common.welcome")}, {user?.name || t("common.guest")}!</h1>
@@ -180,12 +180,12 @@ export default function Profile() {
                   key={a.id}
                   onClick={() => setAvatar(a.id)}
                   className={cn(
-                    "grid h-12 w-12 place-items-center rounded-full text-xl transition-all",
+                    "grid h-12 w-12 place-items-center rounded-full text-primary-foreground transition-all",
                     a.bg,
                     avatar === a.id ? "ring-2 ring-primary ring-offset-2 ring-offset-card scale-110" : "opacity-80 hover:opacity-100"
                   )}
                 >
-                  {a.emoji}
+                  <a.Icon className="h-6 w-6" />
                 </button>
               ))}
             </div>

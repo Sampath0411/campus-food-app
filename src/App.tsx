@@ -1,11 +1,11 @@
 import { useState, useEffect } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Route, Routes, Navigate } from "react-router-dom";
-import { supabase } from "@/lib/supabase";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { CartProvider } from "@/context/CartContext";
+import { AuthProvider, useAuthContext } from "@/context/AuthContext";
 import { AppShell } from "@/components/AppShell";
 import { Preloader } from "@/components/Preloader";
 import Login from "./pages/Login.tsx";
@@ -23,93 +23,68 @@ import Checkout from "./pages/Checkout.tsx";
 import MealPlanner from "./pages/MealPlanner.tsx";
 import Polls from "./pages/Polls.tsx";
 import Fridge from "./pages/Fridge.tsx";
-import NotFound from "./pages/NotFound.tsx";
 
 const queryClient = new QueryClient();
 
 const withShell = (el: React.ReactNode) => <AppShell>{el}</AppShell>;
 
-// Protected route wrapper - checks Supabase session
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
-  const [checking, setChecking] = useState(true);
-  const [authenticated, setAuthenticated] = useState(false);
+  const { user, loading } = useAuthContext();
 
-  useEffect(() => {
-    let done = false;
-    const finish = (ok: boolean) => {
-      if (done) return;
-      done = true;
-      setAuthenticated(ok);
-      setChecking(false);
-    };
-
-    // Fail-open after 3s if Supabase is unreachable so we don't hang forever
-    const timeout = setTimeout(() => finish(false), 3000);
-
-    supabase.auth
-      .getUser()
-      .then(({ data: { user } }) => {
-        clearTimeout(timeout);
-        finish(!!user);
-      })
-      .catch(() => {
-        clearTimeout(timeout);
-        // Clear stale tokens so the SDK stops looping on refresh
-        try {
-          Object.keys(localStorage)
-            .filter((k) => k.startsWith("sb-"))
-            .forEach((k) => localStorage.removeItem(k));
-        } catch {}
-        finish(false);
-      });
-
-    return () => clearTimeout(timeout);
-  }, []);
-
-  if (checking) {
+  if (loading) {
     return (
       <div className="min-h-screen grid place-items-center">
-        <div className="text-muted-foreground">Loading...</div>
+        <div className="text-muted-foreground">Loading auth...</div>
       </div>
     );
   }
 
-  return authenticated ? children : <Navigate to="/login" replace />;
+  return user ? children : <Navigate to="/login" replace />;
 };
 
-const App = () => {
+const AppRoutes = () => {
   const [loaded, setLoaded] = useState(false);
 
   return (
+    <>
+      {!loaded && <Preloader onLoad={() => setLoaded(true)} />}
+      <BrowserRouter>
+        <CartProvider>
+          <Routes>
+            <Route path="/login" element={<Login />} />
+            <Route path="/edit-profile" element={<ProtectedRoute><EditProfile /></ProtectedRoute>} />
+            <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
+            <Route path="/r/:id" element={withShell(<ProtectedRoute><Restaurant /></ProtectedRoute>)} />
+            <Route path="/cart" element={withShell(<ProtectedRoute><Cart /></ProtectedRoute>)} />
+            <Route path="/orders" element={withShell(<ProtectedRoute><OrderTracking /></ProtectedRoute>)} />
+            <Route path="/recent-orders" element={withShell(<ProtectedRoute><RecentOrders /></ProtectedRoute>)} />
+            <Route path="/group" element={withShell(<ProtectedRoute><GroupOrder /></ProtectedRoute>)} />
+            <Route path="/g/:code" element={withShell(<ProtectedRoute><GroupOrder /></ProtectedRoute>)} />
+            <Route path="/search" element={withShell(<ProtectedRoute><Search /></ProtectedRoute>)} />
+            <Route path="/profile" element={withShell(<ProtectedRoute><Profile /></ProtectedRoute>)} />
+            <Route path="/scheduled" element={withShell(<ProtectedRoute><Scheduled /></ProtectedRoute>)} />
+            <Route path="/checkout" element={withShell(<ProtectedRoute><Checkout /></ProtectedRoute>)} />
+            <Route path="/meal-planner" element={withShell(<ProtectedRoute><MealPlanner /></ProtectedRoute>)} />
+            <Route path="/polls" element={withShell(<ProtectedRoute><Polls /></ProtectedRoute>)} />
+            <Route path="/fridge" element={withShell(<ProtectedRoute><Fridge /></ProtectedRoute>)} />
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        </CartProvider>
+      </BrowserRouter>
+    </>
+  );
+};
+
+const App = () => {
+  return (
     <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        {!loaded && <Preloader onLoad={() => setLoaded(true)} />}
-        <BrowserRouter>
-          <CartProvider>
-            <Routes>
-              <Route path="/login" element={<Login />} />
-              <Route path="/edit-profile" element={<ProtectedRoute><EditProfile /></ProtectedRoute>} />
-              <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
-              <Route path="/r/:id" element={withShell(<ProtectedRoute><Restaurant /></ProtectedRoute>)} />
-              <Route path="/cart" element={withShell(<ProtectedRoute><Cart /></ProtectedRoute>)} />
-              <Route path="/orders" element={withShell(<ProtectedRoute><OrderTracking /></ProtectedRoute>)} />
-              <Route path="/recent-orders" element={withShell(<ProtectedRoute><RecentOrders /></ProtectedRoute>)} />
-              <Route path="/group" element={withShell(<ProtectedRoute><GroupOrder /></ProtectedRoute>)} />
-              <Route path="/g/:code" element={withShell(<ProtectedRoute><GroupOrder /></ProtectedRoute>)} />
-              <Route path="/search" element={withShell(<ProtectedRoute><Search /></ProtectedRoute>)} />
-              <Route path="/profile" element={withShell(<ProtectedRoute><Profile /></ProtectedRoute>)} />
-              <Route path="/scheduled" element={withShell(<ProtectedRoute><Scheduled /></ProtectedRoute>)} />
-              <Route path="/checkout" element={withShell(<ProtectedRoute><Checkout /></ProtectedRoute>)} />
-              <Route path="/meal-planner" element={withShell(<ProtectedRoute><MealPlanner /></ProtectedRoute>)} />
-              <Route path="/polls" element={withShell(<ProtectedRoute><Polls /></ProtectedRoute>)} />
-              <Route path="/fridge" element={withShell(<ProtectedRoute><Fridge /></ProtectedRoute>)} />
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </CartProvider>
-        </BrowserRouter>
-      </TooltipProvider>
+      <AuthProvider>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <AppRoutes />
+        </TooltipProvider>
+      </AuthProvider>
     </QueryClientProvider>
   );
 };
