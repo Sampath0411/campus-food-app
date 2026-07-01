@@ -128,7 +128,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       .catch((err) => {
         console.error("Auth bootstrap failed:", err);
         clearStaleAuth();
-        setUser(null);
+        setUser(readLocalUser());
         finish();
       });
 
@@ -151,7 +151,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
 
   const signOut = async () => {
-    await supabase.auth.signOut();
+    try {
+      await supabase.auth.signOut();
+    } catch {
+      // Network can be blocked; local cleanup still signs the user out of the app.
+    }
     localStorage.removeItem(LOCAL_AUTH_KEY);
     setUser(null);
   };
