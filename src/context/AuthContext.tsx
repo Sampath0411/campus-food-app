@@ -22,7 +22,39 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [user, setUser] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
 
+  const clearStaleAuth = () => {
+    try {
+      Object.keys(localStorage)
+        .filter((key) => key.startsWith("sb-") || key.includes("supabase.auth.token"))
+        .forEach((key) => localStorage.removeItem(key));
+    } catch {
+      // localStorage can be unavailable in strict browser modes.
+    }
+  };
+
+  const withTimeout = async <T,>(promise: Promise<T>, ms = 8000): Promise<T> => {
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    try {
+      return await Promise.race([
+        promise,
+        new Promise<never>((_, reject) => {
+          timer = setTimeout(() => reject(new Error("Authentication service timed out")), ms);
+        }),
+      ]);
+    } finally {
+      if (timer) clearTimeout(timer);
+    }
+  };
+
+  const toFallbackProfile = (authUser: SupabaseUser): UserProfile => ({
+    id: authUser.id,
+    name: authUser.user_metadata?.name || authUser.email?.split("@")[0] || "Student",
+    email: authUser.email || "",
+    phone: authUser.user_metadata?.phone || "",
+  });
+
   const loadProfile = async (authUser: SupabaseUser) => {
+    const fallback = toFallbackProfile(authUser);
     try {
       const { data, error } = await supabase
         .from("users")
@@ -37,14 +69,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (data) {
         setUser({ id: data.id, name: data.name, email: data.email, phone: data.phone });
       } else {
-        // Fallback or attempt to create if missing (though trigger should handle it)
-        const fallback = {
-          id: authUser.id,
-          name: authUser.user_metadata?.name || authUser.email?.split("@")[0] || "Guest",
-          email: authUser.email || "",
-          phone: authUser.user_metadata?.phone || "",
-        };
-        
         // We try an upsert here just in case the trigger didn't run or is missing
         // This will only work if the user is authenticated (which they are here)
         const { error: upsertError } = await supabase.from("users").upsert(fallback);
@@ -57,6 +81,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
     } catch (err) {
       console.error("Unexpected error in loadProfile:", err);
+      setUser(fallback);
     }
   };
 
@@ -70,15 +95,26 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   useEffect(() => {
+    let mounted = true;
+    const finish = () => mounted && setLoading(false);
+
     // Initial load
-    supabase.auth.getUser().then(({ data: { user: authUser } }) => {
-      if (authUser) {
-        loadProfile(authUser).finally(() => setLoading(false));
-      } else {
+    withTimeout(supabase.auth.getUser())
+      .then(({ data: { user: authUser } }) => {
+        if (!mounted) return;
+        if (authUser) {
+          loadProfile(authUser).finally(finish);
+        } else {
+          setUser(null);
+          finish();
+        }
+      })
+      .catch((err) => {
+        console.error("Auth bootstrap failed:", err);
+        clearStaleAuth();
         setUser(null);
-        setLoading(false);
-      }
-    });
+        finish();
+      });
 
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
@@ -92,7 +128,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setLoading(false);
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
   }, []);
 
   const signOut = async () => {
