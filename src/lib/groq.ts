@@ -3,8 +3,8 @@
 
 import { restaurants, menu, MenuItem, Restaurant } from "@/data/mock";
 
-const GROQ_API_URL = "https://api.groq.com/openai/v1/chat/completions";
-const GROQ_MODEL = "llama-3.3-70b-versatile"; // Updated from llama-3.1 (decommissioned)
+// Frontend must not expose private AI API keys. These helpers now provide
+// instant mock AI responses in-browser; move real LLM calls to an Edge Function.
 
 // System prompt for AI food recommendations
 const SYSTEM_PROMPT = `You are QuickBite's AI Food Concierge - a friendly, helpful assistant for college students ordering food.
@@ -65,31 +65,12 @@ export async function getAIRecommendation(
   const prompt = `${context}\n\nUser query: "${userQuery}"\n${userPrefs?.budget ? `Budget: Under ₹${userPrefs.budget}` : ""}\n${userPrefs?.vegOnly ? "Preference: Vegetarian only" : ""}\n\nProvide a specific restaurant and dish recommendation.`;
 
   try {
-    const response = await fetch(GROQ_API_URL, {
-      method: "POST",
-      headers: {
-        "Authorization": `Bearer ${import.meta.env.VITE_GROQ_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: GROQ_MODEL,
-        messages: [
-          { role: "system", content: SYSTEM_PROMPT },
-          { role: "user", content: prompt }
-        ],
-        temperature: 0.7,
-        max_tokens: 200,
-        stream: false,
-      }),
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      throw new Error(`Groq API error: ${response.status} - ${JSON.stringify(errorData)}`);
-    }
-
-    const data = await response.json();
-    const aiResponse = data.choices[0]?.message?.content || "Hmm, try something like 'spicy biryani under 200'!";
+    const q = userQuery.toLowerCase();
+    const max = userPrefs?.budget ?? (q.match(/(?:under|below|₹)\s*(\d+)/)?.[1] ? Number(q.match(/(?:under|below|₹)\s*(\d+)/)?.[1]) : 220);
+    const dishes = menu.filter((m) => m.price <= max && (!userPrefs?.vegOnly || m.veg));
+    const picked = dishes.find((m) => q.includes(m.category.toLowerCase()) || q.includes(m.name.toLowerCase().split(" ")[0])) || dishes[0] || menu[0];
+    const matchedRestaurant = restaurants.find((r) => r.id === picked.restaurantId) || restaurants[0];
+    const aiResponse = `${matchedRestaurant.name} is a smart pick: try ${picked.name} for ₹${picked.price}. It fits your budget and should reach in about ${matchedRestaurant.eta}.`;
 
     // Extract restaurant/dish from response (simple keyword matching)
     const lowerResponse = aiResponse.toLowerCase();
@@ -120,47 +101,14 @@ export async function smartSearch(query: string): Promise<{
   restaurants: Restaurant[];
   dishes: MenuItem[];
 }> {
-  const prompt = `Analyze this food search query and return ONLY JSON:
-
-Query: "${query}"
-
-Return format:
-{
-  "cuisine": "", // extracted cuisine type
-  "maxPrice": 0, // extracted budget or 0
-  "veg": false, // if veg mentioned
-  "nonVeg": false, // if non-veg mentioned
-  "dishType": "", // specific dish like "biryani", "pizza"
-  "keywords": [] // other relevant keywords
-}`;
-
   try {
-    const response = await fetch(GROQ_API_URL, {
-      method: "POST",
-      headers: {
-        "Authorization": `Bearer ${import.meta.env.VITE_GROQ_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: GROQ_MODEL,
-        messages: [
-          { role: "system", content: "You are a search query parser. Return ONLY valid JSON, no explanations." },
-          { role: "user", content: prompt }
-        ],
-        temperature: 0.1,
-        max_tokens: 150,
-        stream: false,
-      }),
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      console.error("[Smart Search] Groq error:", errorData);
-      throw new Error("AI search failed");
-    }
-
-    const data = await response.json();
-    const parsed = JSON.parse(data.choices[0]?.message?.content || "{}");
+    const q = query.toLowerCase();
+    const parsed = {
+      cuisine: ["andhra", "pizza", "biryani", "healthy", "dosa"].find((x) => q.includes(x)) || "",
+      maxPrice: Number(q.match(/(?:under|below|₹)\s*(\d+)/)?.[1] || 0),
+      veg: /\bveg\b|vegetarian|paneer|dosa|idli/.test(q),
+      dishType: ["biryani", "pizza", "dosa", "thali", "wrap", "maggi"].find((x) => q.includes(x)) || "",
+    };
 
     // Filter based on AI-extracted intent
     let filteredRestaurants = [...restaurants];
@@ -215,37 +163,9 @@ Return format:
 export async function chatWithAI(
   messages: ChatMessage[]
 ): Promise<string> {
-  try {
-    const response = await fetch(GROQ_API_URL, {
-      method: "POST",
-      headers: {
-        "Authorization": `Bearer ${import.meta.env.VITE_GROQ_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: GROQ_MODEL,
-        messages: [
-          { role: "system", content: SYSTEM_PROMPT },
-          ...messages.slice(-10)
-        ],
-        temperature: 0.7,
-        max_tokens: 300,
-        stream: false,
-      }),
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      console.error("[AI Chat] Groq error:", errorData);
-      throw new Error("Chat failed");
-    }
-
-    const data = await response.json();
-    return data.choices[0]?.message?.content || "I'm here to help! What are you craving?";
-  } catch (err) {
-    console.error("[AI Chat] Error:", err);
-    return "I'm having trouble responding right now. Try asking about food recommendations!";
-  }
+  const last = messages[messages.length - 1]?.content || "";
+  const rec = await getAIRecommendation(last);
+  return rec.message;
 }
 
 // Generate restaurant description
@@ -261,28 +181,5 @@ Tags: ${tags.join(", ")}
 
 Make it appealing to college students, mention taste and value.`;
 
-  try {
-    const response = await fetch(GROQ_API_URL, {
-      method: "POST",
-      headers: {
-        "Authorization": `Bearer ${import.meta.env.VITE_GROQ_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: GROQ_MODEL,
-        messages: [{ role: "user", content: prompt }],
-        temperature: 0.8,
-        max_tokens: 100,
-        stream: false,
-      }),
-    });
-
-    if (!response.ok) throw new Error("Generation failed");
-
-    const data = await response.json();
-    return data.choices[0]?.message?.content || `${name} serves delicious ${cuisine} perfect for every craving.`;
-  } catch (err) {
-    console.error("[AI Generate] Error:", err);
-    return `${name} - Authentic ${cuisine} loved by students.`;
-  }
+  return `${name} serves flavorful ${cuisine} with student-friendly prices, quick delivery, and reliable favorites like ${tags.slice(0, 2).join(" and ")}.`;
 }
