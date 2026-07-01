@@ -16,6 +16,13 @@ import {
   MessageCircle,
   Vote,
   Refrigerator,
+  Pizza,
+  Salad,
+  Coffee,
+  IceCream,
+  Soup,
+  Sandwich,
+  Utensils,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useCart } from "@/context/CartContext";
@@ -57,6 +64,17 @@ const mobileNav = [
   { to: "/cart", label: "Cart", icon: ShoppingCart },
   { to: "/profile", label: "Profile", icon: User },
 ];
+
+const avatarIcons: Record<string, typeof Utensils> = {
+  burger: Sandwich,
+  pizza: Pizza,
+  ramen: Soup,
+  salad: Salad,
+  biryani: Utensils,
+  ice: IceCream,
+  coffee: Coffee,
+  taco: Utensils,
+};
 
 export function AppShell({ children }: { children: ReactNode }) {
   const { count } = useCart();
@@ -156,13 +174,13 @@ export function AppShell({ children }: { children: ReactNode }) {
             </Button>
             <button
               onClick={() => navigate("/profile")}
-              className="grid h-9 w-9 place-items-center rounded-full bg-gradient-accent text-base font-semibold text-accent-foreground"
+              className="grid h-9 w-9 place-items-center rounded-full bg-gradient-accent text-accent-foreground shadow-soft transition-transform hover:scale-105"
               title="Profile"
             >
               {(() => {
-                const map: Record<string, string> = { burger: "🍔", pizza: "🍕", ramen: "🍜", salad: "🥗", biryani: "🍛", ice: "🍦", coffee: "☕", taco: "🌮" };
                 const a = localStorage.getItem("bb:avatar") || "burger";
-                return map[a] || "🍔";
+                const Icon = avatarIcons[a] || Sandwich;
+                return <Icon className="h-4.5 w-4.5" />;
               })()}
             </button>
           </div>
