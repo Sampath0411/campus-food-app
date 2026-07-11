@@ -143,10 +143,10 @@ export function AppShell({ children }: { children: ReactNode }) {
             <Button
               variant="ghost"
               size="icon"
-              className="rounded-full text-primary"
-              onClick={() => setAiOpen(true)}
-              aria-label="Open AI Concierge"
-              title="AI Concierge"
+              className="rounded-full text-primary hover:bg-primary/10 animate-pulse-soft"
+              onClick={() => navigate("/chat")}
+              aria-label="Open AI Chat Agent"
+              title="AI Chat Agent"
             >
               <MessageCircle className="h-4 w-4" />
             </Button>
