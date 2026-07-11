@@ -1,6 +1,6 @@
 import { Suspense, useRef, useState, useEffect } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
-import { Float, OrbitControls, Sphere, MeshDistortMaterial, Environment, Text3D, Center } from "@react-three/drei";
+import { Float, OrbitControls, Sphere, MeshDistortMaterial, Environment } from "@react-three/drei";
 import { Send, Sparkles, Loader2, Utensils, Bot, ShoppingBag } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
