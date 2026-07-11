@@ -35,7 +35,7 @@ const AppRoutes = () => {
       <BrowserRouter>
         <CartProvider>
           <Routes>
-            <Route path="/" element={withShell(<Index />)} />
+            <Route path="/" element={<Index />} />
             <Route path="/chat" element={withShell(<Chat />)} />
             <Route path="/r/:id" element={withShell(<Restaurant />)} />
             <Route path="/cart" element={withShell(<Cart />)} />
