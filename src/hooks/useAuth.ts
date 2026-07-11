@@ -9,8 +9,8 @@ export function useAuth() {
   return {
     user: guestUser,
     loading: false,
-    signUp: async () => ({ user: guestUser, session: null }),
-    signIn: async () => ({ user: guestUser, session: null }),
+    signUp: async (_name?: string, _email?: string, _phone?: string, _password?: string) => ({ user: guestUser, session: { user: guestUser } as any }),
+    signIn: async (_email?: string, _password?: string) => ({ user: guestUser, session: { user: guestUser } as any }),
     signOut: async () => {},
     refreshUser: async () => {},
   };
