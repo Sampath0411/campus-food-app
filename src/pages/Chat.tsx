@@ -1,6 +1,6 @@
 import { Suspense, useRef, useState, useEffect } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
-import { Float, OrbitControls, Sphere, MeshDistortMaterial, Environment } from "@react-three/drei";
+import { Float, OrbitControls, Sphere, MeshDistortMaterial } from "@react-three/drei";
 import { Send, Sparkles, Loader2, Utensils, Bot, ShoppingBag } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -47,7 +47,7 @@ function Scene3D() {
         <FoodBlob position={[-2.4, 0.6, 0]} color="#FF6B00" speed={1} />
         <FoodBlob position={[2.2, -0.4, -1]} color="#00C853" speed={0.8} />
         <FoodBlob position={[0, 1.2, -2]} color="#FFB300" speed={1.3} />
-        <Environment preset="sunset" />
+        <directionalLight position={[5, 5, 5]} intensity={0.6} />
       </Suspense>
       <OrbitControls enableZoom={false} enablePan={false} autoRotate autoRotateSpeed={0.6} />
     </Canvas>
