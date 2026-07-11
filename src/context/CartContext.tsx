@@ -6,6 +6,8 @@ type CartCtx = {
   lines: CartLine[];
   add: (id: string) => void;
   remove: (id: string) => void;
+  addMany: (ids: string[]) => void;
+  clear: () => void;
   count: number;
   subtotal: number;
 };
@@ -24,6 +26,13 @@ export function CartProvider({ children }: { children: ReactNode }) {
       else next[id] = q;
       return next;
     });
+  const addMany = (ids: string[]) =>
+    setMap((m) => {
+      const next = { ...m };
+      ids.forEach((id) => (next[id] = (next[id] ?? 0) + 1));
+      return next;
+    });
+  const clear = () => setMap({});
 
   const lines = useMemo<CartLine[]>(
     () =>
@@ -39,7 +48,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const count = lines.reduce((s, l) => s + l.qty, 0);
   const subtotal = lines.reduce((s, l) => s + l.qty * l.item.price, 0);
 
-  return <Ctx.Provider value={{ lines, add, remove, count, subtotal }}>{children}</Ctx.Provider>;
+  return <Ctx.Provider value={{ lines, add, remove, addMany, clear, count, subtotal }}>{children}</Ctx.Provider>;
 }
 
 export const useCart = () => {
