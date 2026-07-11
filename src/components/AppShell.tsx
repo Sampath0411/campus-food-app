@@ -60,7 +60,7 @@ function tipOfTheDay() {
 
 const mobileNav = [
   { to: "/", label: "Home", icon: Home },
-  { to: "/search", label: "Search", icon: Search },
+  { to: "/chat", label: "AI Chat", icon: MessageCircle },
   { to: "/recent-orders", label: "Orders", icon: ScrollText },
   { to: "/cart", label: "Cart", icon: ShoppingCart },
   { to: "/profile", label: "Profile", icon: User },
