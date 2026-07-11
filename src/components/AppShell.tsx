@@ -32,6 +32,7 @@ import { AIConcierge } from "@/components/AIConcierge";
 
 const navItems = [
   { to: "/", label: "Home", icon: Home },
+  { to: "/chat", label: "AI Chat Agent", icon: MessageCircle },
   { to: "/search", label: "Search", icon: Search },
   { to: "/recent-orders", label: "Recent Orders", icon: ScrollText },
   { to: "/orders", label: "Track Order", icon: Truck },
